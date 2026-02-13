@@ -1,11 +1,21 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import {ConsoleLogger} from "@nestjs/common";
 
 declare const module: any;
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule, {
+    logger: new ConsoleLogger({
+      prefix: 'Dashboard Server',
+      logLevels: ['log', 'error', 'debug', 'warn', 'fatal', 'verbose'],
+      colors: true,
+      sorted: true,
+      json: true,
+      compact: false,
+    })
+  });
 
   const config = new DocumentBuilder()
       .setTitle('Dashboard')
