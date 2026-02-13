@@ -13,6 +13,12 @@ export class User {
     @Column({ unique: true, nullable: false})
     email: string
 
+    @Column({ nullable: true})
+    googleId: string
+
+    @Column({nullable: true})
+    googleName: string
+
     @Column({ nullable: true })
     phone: string
 
@@ -37,6 +43,9 @@ export class User {
         default: UserRole.USER
     })
     role: UserRole
+
+    @Column({ nullable: true })
+    image: string;
 
     @CreateDateColumn()
     created_at: Date
