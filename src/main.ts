@@ -1,7 +1,7 @@
-import { NestFactory } from '@nestjs/core';
+import {NestFactory, Reflector} from '@nestjs/core';
 import { AppModule } from './app.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
-import {ConsoleLogger} from "@nestjs/common";
+import {ClassSerializerInterceptor, ConsoleLogger, ValidationPipe} from "@nestjs/common";
 
 declare const module: any;
 
@@ -16,6 +16,14 @@ async function bootstrap() {
       compact: false,
     })
   });
+
+  app.useGlobalInterceptors(new ClassSerializerInterceptor(app.get(Reflector)))
+
+  app.useGlobalPipes(new ValidationPipe({
+    whitelist: true,
+    forbidNonWhitelisted: true,
+    transform: true,
+  }))
 
   const config = new DocumentBuilder()
       .setTitle('Dashboard')

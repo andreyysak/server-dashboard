@@ -1,34 +1,25 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
-import { UserService } from './user.service';
-import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
+import {Body, Controller, Get, Param, Patch, Req, UseGuards} from '@nestjs/common';
+import {UserService} from './user.service';
+import {AuthGuard} from "@nestjs/passport";
+import {UpdateUserLocationDto} from "./dto/update-location.dto";
 
 @Controller('user')
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
-  @Post()
-  create(@Body() createUserDto: CreateUserDto) {
-    return this.userService.create(createUserDto);
+  @Get('me')
+  @UseGuards(AuthGuard('jwt'))
+  async getUser(@Req() req) {
+    return await this.userService.getUser(req.user.user_id)
   }
 
-  @Get()
-  findAll() {
-    return this.userService.findAll();
-  }
-
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.userService.findOne(+id);
-  }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
-    return this.userService.update(+id, updateUserDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.userService.remove(+id);
+  @Patch('location')
+  @UseGuards(AuthGuard('jwt'))
+  async editUserLocation(
+      @Req() req,
+      @Body() updateUserLocationDto: UpdateUserLocationDto
+  ) {
+    const { country, city } = updateUserLocationDto
+    return await this.userService.editLocationInfo(req.user.user_id, country, city)
   }
 }

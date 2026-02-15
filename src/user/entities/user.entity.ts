@@ -1,9 +1,6 @@
 import {Column, CreateDateColumn, Entity, PrimaryGeneratedColumn} from "typeorm";
-
-enum UserRole {
-    USER = 'USER',
-    ADMIN = 'ADMIN',
-}
+import {Exclude} from "class-transformer";
+import {UserRole} from "../enums/user-role.enum";
 
 @Entity('users')
 export class User {
@@ -13,6 +10,7 @@ export class User {
     @Column({ unique: true, nullable: false})
     email: string
 
+    @Exclude()
     @Column({ nullable: true})
     googleId: string
 
@@ -28,6 +26,7 @@ export class User {
     @Column({ nullable: true })
     telegram_username: string;
 
+    @Exclude()
     @Column({ unique: true })
     telegram_user_id: string;
 

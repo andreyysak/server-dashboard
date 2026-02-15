@@ -1,31 +1,23 @@
 import {Injectable} from "@nestjs/common";
 import {InjectRepository} from "@nestjs/typeorm";
 import {User} from "../user/entities/user.entity";
-import {Repository} from "typeorm";
 import {JwtService} from "@nestjs/jwt";
+import {UserService} from "../user/user.service";
 
 @Injectable()
 export class AuthService {
     constructor(
-        @InjectRepository(User)
-        private userRepository: Repository<User>,
+        private userService: UserService,
         private jwtService: JwtService,
     ) {}
 
     async validate(details: any) {
-        let user = await this.userRepository.findOneBy({ email: details.email })
-
-        if (!user) {
-            user = this.userRepository.create({
-                email: details.email,
-                googleId: details.googleId,
-                googleName: details.displayName,
-                image: details.picture,
-            })
-            await this.userRepository.save(user)
-        }
-
-        return user
+        return await this.userService.findOrCreateUser({
+            email: details.email,
+            googleId: details.googleId,
+            googleName: details.displayName,
+            image: details.picture,
+        });
     }
 
     generateJwt(user: User) {
