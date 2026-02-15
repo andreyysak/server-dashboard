@@ -1,6 +1,8 @@
-import {Column, CreateDateColumn, Entity, PrimaryGeneratedColumn} from "typeorm";
+import {Column, CreateDateColumn, Entity, OneToMany, PrimaryGeneratedColumn} from "typeorm";
 import {Exclude} from "class-transformer";
 import {UserRole} from "../enums/user-role.enum";
+import {Trip} from "../../trip/entities/trip.entity";
+import {Car} from "../../car/entities/car.entity";
 
 @Entity('users')
 export class User {
@@ -48,4 +50,10 @@ export class User {
 
     @CreateDateColumn()
     created_at: Date
+
+    @OneToMany(() => Trip, (trip) => trip.user)
+    trips: Trip[];
+
+    @OneToMany(() => Car, (car) => car.user)
+    cars: Car[];
 }
