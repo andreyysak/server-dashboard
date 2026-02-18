@@ -3,6 +3,7 @@ import {Exclude} from "class-transformer";
 import {UserRole} from "../enums/user-role.enum";
 import {Trip} from "../../trip/entities/trip.entity";
 import {Car} from "../../car/entities/car.entity";
+import {Fuel} from "../../fuel/entities/fuel.entity";
 
 @Entity('users')
 export class User {
@@ -56,4 +57,7 @@ export class User {
 
     @OneToMany(() => Car, (car) => car.user)
     cars: Car[];
+
+    @OneToMany(() => Fuel, (fuel) => fuel.user)
+    fuels: Fuel[];
 }

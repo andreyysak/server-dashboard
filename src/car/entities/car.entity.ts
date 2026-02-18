@@ -2,6 +2,7 @@ import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, OneToMany, JoinColum
 import { User } from '../../user/entities/user.entity';
 import { Trip } from '../../trip/entities/trip.entity';
 import { CarPicture } from './car-picture.entity';
+import {Fuel} from "../../fuel/entities/fuel.entity";
 
 @Entity('cars')
 export class Car {
@@ -56,6 +57,9 @@ export class Car {
 
     @OneToMany(() => Trip, (trip) => trip.car)
     trips: Trip[];
+
+    @OneToMany(() => Fuel, (fuel) => fuel.car)
+    fuels: Fuel[];
 
     @OneToMany(() => CarPicture, (picture) => picture.car, { cascade: true })
     pictures: CarPicture[];

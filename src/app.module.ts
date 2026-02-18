@@ -7,6 +7,7 @@ import { UserModule } from './user/user.module';
 import {AuthModule} from "./auth/auth.module";
 import { TripModule } from './trip/trip.module';
 import { CarModule } from './car/car.module';
+import { FuelModule } from './fuel/fuel.module';
 
 @Module({
   imports: [
@@ -24,7 +25,8 @@ import { CarModule } from './car/car.module';
       UserModule,
       AuthModule,
       TripModule,
-      CarModule
+      CarModule,
+      FuelModule
   ],
   controllers: [AppController],
   providers: [AppService],
