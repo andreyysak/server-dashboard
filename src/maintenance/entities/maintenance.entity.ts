@@ -1,21 +1,11 @@
-import {
-    Column,
-    CreateDateColumn,
-    Entity,
-    Index,
-    JoinColumn,
-    ManyToOne,
-    PrimaryGeneratedColumn,
-    UpdateDateColumn
-} from "typeorm";
-import {FuelStation} from "../enums/fuel-station.enum";
+import {Column, CreateDateColumn, Entity, Index, JoinColumn, ManyToOne, PrimaryGeneratedColumn} from "typeorm";
 import {User} from "../../user/entities/user.entity";
 import {Car} from "../../car/entities/car.entity";
 
-@Entity('fuel')
-export class Fuel {
+@Entity('maintenance')
+export class Maintenance {
     @PrimaryGeneratedColumn()
-    gas_id: number
+    maintenance_id: number
 
     @Index()
     @Column()
@@ -25,20 +15,17 @@ export class Fuel {
     @Column()
     car_id: number
 
-    @Column({type: 'float'})
-    liters: number
+    @Column()
+    date: Date
 
-    @Column({type: 'float'})
-    price: number
+    @Column()
+    description: string
 
-    @Column({ type: 'enum', enum: FuelStation, default: FuelStation.OKKO })
-    station: FuelStation
+    @Column()
+    odometer: number
 
     @CreateDateColumn()
     created_at: Date
-
-    @UpdateDateColumn()
-    updated_at: Date
 
     @ManyToOne(() => User, (user) => user.trips, { onDelete: 'CASCADE' })
     @JoinColumn({ name: 'userId' })

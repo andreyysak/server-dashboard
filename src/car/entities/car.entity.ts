@@ -3,6 +3,7 @@ import { User } from '../../user/entities/user.entity';
 import { Trip } from '../../trip/entities/trip.entity';
 import { CarPicture } from './car-picture.entity';
 import {Fuel} from "../../fuel/entities/fuel.entity";
+import {Maintenance} from "../../maintenance/entities/maintenance.entity";
 
 @Entity('cars')
 export class Car {
@@ -63,4 +64,7 @@ export class Car {
 
     @OneToMany(() => CarPicture, (picture) => picture.car, { cascade: true })
     pictures: CarPicture[];
+
+    @OneToMany(() => Maintenance, (maintenance) => maintenance.car, { cascade: true })
+    maintenances: Maintenance[];
 }
