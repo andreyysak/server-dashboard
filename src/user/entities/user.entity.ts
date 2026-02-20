@@ -34,7 +34,7 @@ export class User {
     telegram_username: string;
 
     @Exclude()
-    @Column({ unique: true })
+    @Column({ unique: true, nullable: true })
     telegram_user_id: string;
 
     @Column({ nullable: true })

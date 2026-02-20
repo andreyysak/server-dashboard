@@ -18,6 +18,6 @@ export class AuthController {
         const user = await this.authService.validate(req.user)
         const jwt = this.authService.generateJwt(user)
 
-        return res.redirect(`${process.env.FRONTEND_URL!}/login-success?token=${jwt}`)
+        return res.redirect(`${process.env.FRONTEND_URL!}?token=${jwt}`)
     }
 }
