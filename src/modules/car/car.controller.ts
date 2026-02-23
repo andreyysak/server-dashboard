@@ -30,6 +30,7 @@ export class CarController {
   @Post()
   @ApiOperation({ summary: 'Додати новий автомобіль' })
   async create(@Req() req, @Body() createCarDto: CreateCarDto) {
+    console.log('User from request:', req.user); // Подивись у консоль сервера!
     return await this.carService.create(req.user.user_id, createCarDto);
   }
 
