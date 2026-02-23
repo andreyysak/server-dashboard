@@ -17,13 +17,17 @@ import { MoviesService } from './movies.service';
 import { CreateMovieDto } from './dto/create-movie.dto';
 import { UpdateMovieStatusDto } from './dto/update-movie.dto';
 import { MovieStatus } from './enums/movie-status.enum';
+import {MoviesSeeder} from "./seeders/movie.seeder";
 
 @ApiTags('Movies')
 @ApiBearerAuth()
 @UseGuards(AuthGuard('jwt'))
 @Controller('movies')
 export class MoviesController {
-  constructor(private readonly moviesService: MoviesService) {}
+  constructor(
+      private readonly moviesService: MoviesService,
+      private readonly moviesSeeder: MoviesSeeder,
+      ) {}
 
   @Post()
   @ApiOperation({ summary: 'Додати фільм у список' })
@@ -71,5 +75,10 @@ export class MoviesController {
   @ApiOperation({ summary: 'Видалити фільм зі списку' })
   remove(@Req() req, @Param('id', ParseIntPipe) id: number) {
     return this.moviesService.remove(req.user.user_id, id);
+  }
+
+  @Post('seed')
+  async seed(@Req() req) {
+    return await this.moviesSeeder.seed(req.user.user_id);
   }
 }

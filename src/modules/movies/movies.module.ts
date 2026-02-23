@@ -4,6 +4,7 @@ import { MoviesService } from './movies.service';
 import { MoviesController } from './movies.controller';
 import { Movie } from './entities/movie.entity';
 import { MovieDetails } from './entities/movie-details.entity';
+import {MoviesSeeder} from "./seeders/movie.seeder";
 
 @Module({
   imports: [
@@ -11,6 +12,6 @@ import { MovieDetails } from './entities/movie-details.entity';
   ],
   controllers: [MoviesController],
   providers: [MoviesService],
-  exports: [MoviesService],
+  exports: [MoviesService, MoviesSeeder],
 })
 export class MoviesModule {}
