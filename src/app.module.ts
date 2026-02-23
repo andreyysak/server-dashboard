@@ -16,6 +16,7 @@ import { MaintenanceModule } from './modules/maintenance/maintenance.module';
 import { MoviesModule } from './modules/movies/movies.module';
 import { SeriesModule } from './modules/series/series.module';
 import {WorkoutsModule} from "./modules/workout/workout.module";
+import { MonobankModule } from './monobank/monobank.module';
 
 @Module({
   imports: [
@@ -49,7 +50,8 @@ import {WorkoutsModule} from "./modules/workout/workout.module";
       MaintenanceModule,
       MoviesModule,
       SeriesModule,
-      WorkoutsModule
+      WorkoutsModule,
+      MonobankModule
   ],
   controllers: [AppController],
   providers: [AppService],
