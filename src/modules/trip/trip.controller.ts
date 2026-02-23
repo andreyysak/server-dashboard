@@ -16,13 +16,17 @@ import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { TripService } from './trip.service';
 import { CreateTripDto } from './dto/create-trip.dto';
 import { UpdateTripDto } from './dto/update-trip.dto';
+import {TripSeeder} from "./seeders/trip.seeder";
 
 @ApiTags('Trips')
 @ApiBearerAuth()
 @UseGuards(AuthGuard('jwt'))
 @Controller('trips')
 export class TripController {
-  constructor(private readonly tripService: TripService) {}
+  constructor(
+      private readonly tripService: TripService,
+      private readonly tripSeeder: TripSeeder,
+  ) {}
 
   @Post()
   @ApiOperation({ summary: 'Створити нову поїздку' })
@@ -68,5 +72,10 @@ export class TripController {
   @ApiOperation({ summary: 'Видалити поїздку' })
   async remove(@Req() req, @Param('id', ParseIntPipe) id: number) {
     return await this.tripService.deleteTrip(req.user.user_id, id);
+  }
+
+  @Post('seed')
+  async seed(@Req() req) {
+    return await this.tripSeeder.seed(req.user.user_id);
   }
 }

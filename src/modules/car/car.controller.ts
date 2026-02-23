@@ -15,13 +15,17 @@ import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { CarService } from './car.service';
 import { CreateCarDto } from './dto/create-car.dto';
 import { UpdateCarDto } from './dto/update-car.dto';
+import {CarsSeeder} from "./seeders/car.seeder";
 
 @ApiTags('Cars')
 @ApiBearerAuth()
 @UseGuards(AuthGuard('jwt'))
 @Controller('cars')
 export class CarController {
-  constructor(private readonly carService: CarService) {}
+  constructor(
+      private readonly carService: CarService,
+      private readonly carSeeder: CarsSeeder,
+  ) {}
 
   @Post()
   @ApiOperation({ summary: 'Додати новий автомобіль' })
@@ -55,5 +59,10 @@ export class CarController {
   @ApiOperation({ summary: 'Видалити автомобіль із бази' })
   async remove(@Req() req, @Param('id', ParseIntPipe) id: number) {
     return await this.carService.remove(req.user.user_id, id);
+  }
+
+  @Post('seed')
+  async seed(@Req() req) {
+    return await this.carSeeder.seed(req.user.user_id);
   }
 }

@@ -16,13 +16,17 @@ import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { FuelService } from './fuel.service';
 import { CreateFuelDto } from './dto/create-fuel.dto';
 import { UpdateFuelDto } from './dto/update-fuel.dto';
+import {FuelSeeder} from "./seeders/fuel.seeder";
 
 @ApiTags('Fuel')
 @ApiBearerAuth()
 @UseGuards(AuthGuard('jwt'))
 @Controller('fuel')
 export class FuelController {
-  constructor(private readonly fuelService: FuelService) {}
+  constructor(
+      private readonly fuelService: FuelService,
+      private readonly fuelSeeder: FuelSeeder,
+  ) {}
 
   @Post()
   @ApiOperation({ summary: 'Додати запис про заправку' })
@@ -56,5 +60,10 @@ export class FuelController {
   @ApiOperation({ summary: 'Видалити запис про заправку' })
   async remove(@Req() req, @Param('id', ParseIntPipe) id: number) {
     return await this.fuelService.deleteFull(req.user.user_id, id);
+  }
+
+  @Post('seed')
+  async seed(@Req() req) {
+    return await this.fuelSeeder.seed(req.user.user_id);
   }
 }

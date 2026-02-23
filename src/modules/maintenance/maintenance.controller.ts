@@ -4,13 +4,17 @@ import {AuthGuard} from "@nestjs/passport";
 import {MaintenanceService} from "./maintenance.service";
 import {CreateMaintenanceDto} from "./dto/create-maintenance.dto";
 import {UpdateMaintenanceDto} from "./dto/update-maintenance.dto";
+import {MaintenanceSeeder} from "./seeders/maintenance.seeder";
 
 @ApiTags('Maintenance')
 @ApiBearerAuth()
 @UseGuards(AuthGuard('jwt'))
 @Controller('maintenance')
 export class MaintenanceController {
-  constructor(private readonly maintenanceService: MaintenanceService) {}
+  constructor(
+      private readonly maintenanceService: MaintenanceService,
+      private readonly maintenanceSeeder: MaintenanceSeeder,
+  ) {}
 
   @Post()
   create(@Req() req, @Body() dto: CreateMaintenanceDto) {
@@ -39,5 +43,10 @@ export class MaintenanceController {
   @Delete(':id')
   remove(@Req() req, @Param('id', ParseIntPipe) id: number) {
     return this.maintenanceService.remove(req.user.user_id, id);
+  }
+
+  @Post('seed')
+  async seed(@Req() req) {
+    return await this.maintenanceSeeder.seed(req.user.user_id);
   }
 }

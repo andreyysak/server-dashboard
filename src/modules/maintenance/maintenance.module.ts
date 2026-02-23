@@ -3,13 +3,14 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { MaintenanceService } from './maintenance.service';
 import { MaintenanceController } from './maintenance.controller';
 import { Maintenance } from './entities/maintenance.entity';
-import { Car } from '../car/entities/car.entity'; // Перевір цей шлях
+import { Car } from '../car/entities/car.entity';
+import {MaintenanceSeeder} from "./seeders/maintenance.seeder";
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([Maintenance, Car]),
   ],
   controllers: [MaintenanceController],
-  providers: [MaintenanceService],
+  providers: [MaintenanceService, MaintenanceSeeder],
 })
 export class MaintenanceModule {}
