@@ -11,7 +11,7 @@ import {MoviesSeeder} from "./seeders/movie.seeder";
     TypeOrmModule.forFeature([Movie, MovieDetails]),
   ],
   controllers: [MoviesController],
-  providers: [MoviesService],
-  exports: [MoviesService, MoviesSeeder],
+  providers: [MoviesService, MoviesSeeder],
+  exports: [MoviesService],
 })
 export class MoviesModule {}

@@ -11,7 +11,7 @@ import {SeriesSeeder} from "./seeders/series.seeder";
     TypeOrmModule.forFeature([Series, SeriesDetails]),
   ],
   controllers: [SeriesController],
-  providers: [SeriesService],
-  exports: [SeriesService, SeriesSeeder],
+  providers: [SeriesService, SeriesSeeder],
+  exports: [SeriesService],
 })
 export class SeriesModule {}

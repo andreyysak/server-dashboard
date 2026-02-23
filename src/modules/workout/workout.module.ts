@@ -9,7 +9,7 @@ import {WorkoutsSeeder} from "./seeders/workout.seeder";
 @Module({
   imports: [TypeOrmModule.forFeature([Workout, Exercise])],
   controllers: [WorkoutsController],
-  providers: [WorkoutsService],
-  exports: [WorkoutsService, WorkoutsSeeder]
+  providers: [WorkoutsService, WorkoutsSeeder],
+  exports: [WorkoutsService]
 })
 export class WorkoutsModule {}
