@@ -5,13 +5,17 @@ import { SeriesService } from './series.service';
 import { CreateSeriesDto } from './dto/create-series.dto';
 import { SeriesStatus } from './enums/series-status.enum';
 import {UpdateSeriesProgressDto} from "./dto/update-series.dto";
+import {SeriesSeeder} from "./seeders/series.seeder";
 
 @ApiTags('Series')
 @ApiBearerAuth()
 @UseGuards(AuthGuard('jwt'))
 @Controller('series')
 export class SeriesController {
-  constructor(private readonly seriesService: SeriesService) {}
+  constructor(
+      private readonly seriesService: SeriesService,
+      private readonly seriesSeeder: SeriesSeeder,
+  ) {}
 
   @Post()
   @ApiOperation({ summary: 'Додати серіал у список' })
@@ -41,5 +45,10 @@ export class SeriesController {
   @ApiOperation({ summary: 'Видалити серіал зі списку' })
   remove(@Req() req, @Param('id', ParseIntPipe) id: number) {
     return this.seriesService.remove(req.user.user_id, id);
+  }
+
+  @Post('seed')
+  async seed(@Req() req) {
+    return await this.seriesSeeder.seed(req.user.user_id);
   }
 }

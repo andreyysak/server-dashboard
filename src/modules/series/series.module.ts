@@ -4,6 +4,7 @@ import { SeriesService } from './series.service';
 import { SeriesController } from './series.controller';
 import { Series } from './entities/series.entity';
 import { SeriesDetails } from './entities/series-details.entity';
+import {SeriesSeeder} from "./seeders/series.seeder";
 
 @Module({
   imports: [
@@ -11,6 +12,6 @@ import { SeriesDetails } from './entities/series-details.entity';
   ],
   controllers: [SeriesController],
   providers: [SeriesService],
-  exports: [SeriesService],
+  exports: [SeriesService, SeriesSeeder],
 })
 export class SeriesModule {}
