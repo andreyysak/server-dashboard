@@ -16,7 +16,8 @@ import { MaintenanceModule } from './modules/maintenance/maintenance.module';
 import { MoviesModule } from './modules/movies/movies.module';
 import { SeriesModule } from './modules/series/series.module';
 import {WorkoutsModule} from "./modules/workout/workout.module";
-import { MonobankModule } from './monobank/monobank.module';
+import { MonobankModule } from './modules/monobank/monobank.module';
+import { WeatherModule } from './modules/weather/weather.module';
 
 @Module({
   imports: [
@@ -51,7 +52,8 @@ import { MonobankModule } from './monobank/monobank.module';
       MoviesModule,
       SeriesModule,
       WorkoutsModule,
-      MonobankModule
+      MonobankModule,
+      WeatherModule
   ],
   controllers: [AppController],
   providers: [AppService],
