@@ -9,6 +9,7 @@ import { Category } from "../../category/entities/category.entity";
 import { Transaction } from "../../transaction/entities/transaction.entity";
 import {Maintenance} from "../../maintenance/entities/maintenance.entity";
 import {Movie} from "../../movies/entities/movie.entity";
+import {Series} from "../../series/entities/series.entity";
 
 @Entity('users')
 export class User {
@@ -80,4 +81,7 @@ export class User {
 
     @OneToMany(() => Movie, (movie) => movie.user)
     movies: Movie[];
+
+    @OneToMany(() => Series, (seria) => seria.user)
+    series: Series[];
 }

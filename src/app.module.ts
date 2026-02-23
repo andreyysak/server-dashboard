@@ -14,6 +14,7 @@ import { CategoryModule } from './modules/category/category.module';
 import { TransactionModule } from './modules/transaction/transaction.module';
 import { MaintenanceModule } from './modules/maintenance/maintenance.module';
 import { MoviesModule } from './modules/movies/movies.module';
+import { SeriesModule } from './modules/series/series.module';
 
 @Module({
   imports: [
@@ -45,7 +46,8 @@ import { MoviesModule } from './modules/movies/movies.module';
       CategoryModule,
       TransactionModule,
       MaintenanceModule,
-      MoviesModule
+      MoviesModule,
+      SeriesModule
   ],
   controllers: [AppController],
   providers: [AppService],
