@@ -1,34 +1,43 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
-import { MaintenanceService } from './maintenance.service';
-import { CreateMaintenanceDto } from './dto/create-maintenance.dto';
-import { UpdateMaintenanceDto } from './dto/update-maintenance.dto';
+import {ApiBearerAuth, ApiTags} from "@nestjs/swagger";
+import {Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post, Query, Req, UseGuards} from "@nestjs/common";
+import {AuthGuard} from "@nestjs/passport";
+import {MaintenanceService} from "./maintenance.service";
+import {CreateMaintenanceDto} from "./dto/create-maintenance.dto";
+import {UpdateMaintenanceDto} from "./dto/update-maintenance.dto";
 
+@ApiTags('Maintenance')
+@ApiBearerAuth()
+@UseGuards(AuthGuard('jwt'))
 @Controller('maintenance')
 export class MaintenanceController {
   constructor(private readonly maintenanceService: MaintenanceService) {}
 
   @Post()
-  create(@Body() createMaintenanceDto: CreateMaintenanceDto) {
-    return this.maintenanceService.create(createMaintenanceDto);
+  create(@Req() req, @Body() dto: CreateMaintenanceDto) {
+    return this.maintenanceService.create(req.user.user_id, dto);
   }
 
   @Get()
-  findAll() {
-    return this.maintenanceService.findAll();
+  findAll(@Req() req, @Query('carId') carId?: string) {
+    return this.maintenanceService.findAll(req.user.user_id, carId ? +carId : undefined);
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.maintenanceService.findOne(+id);
+  findOne(@Req() req, @Param('id', ParseIntPipe) id: number) {
+    return this.maintenanceService.findOne(req.user.user_id, id);
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateMaintenanceDto: UpdateMaintenanceDto) {
-    return this.maintenanceService.update(+id, updateMaintenanceDto);
+  update(
+      @Req() req,
+      @Param('id', ParseIntPipe) id: number,
+      @Body() dto: UpdateMaintenanceDto
+  ) {
+    return this.maintenanceService.update(req.user.user_id, id, dto);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.maintenanceService.remove(+id);
+  remove(@Req() req, @Param('id', ParseIntPipe) id: number) {
+    return this.maintenanceService.remove(req.user.user_id, id);
   }
 }

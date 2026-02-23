@@ -27,11 +27,11 @@ export class Maintenance {
     @CreateDateColumn()
     created_at: Date
 
-    @ManyToOne(() => User, (user) => user.trips, { onDelete: 'CASCADE' })
-    @JoinColumn({ name: 'userId' })
+    @ManyToOne(() => User, (user) => user.maintenances, { onDelete: 'CASCADE' })
+    @JoinColumn({ name: 'user_id' })
     user: User;
 
-    @ManyToOne(() => Car, (car) => car.trips, { onDelete: 'CASCADE' })
+    @ManyToOne(() => Car, (car) => car.maintenances, { onDelete: 'CASCADE' })
     @JoinColumn({ name: 'car_id' })
     car: Car;
 }
