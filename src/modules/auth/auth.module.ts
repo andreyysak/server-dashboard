@@ -3,8 +3,8 @@ import { JwtModule, JwtModuleOptions } from "@nestjs/jwt";
 import { PassportModule } from "@nestjs/passport";
 import { AuthController } from "./auth.controller";
 import { AuthService } from "./auth.service";
-import { GoogleStrategy } from "../common/strategies/google.strategy";
-import { JwtStrategy } from "../common/strategies/jwt.strategy";
+import { GoogleStrategy } from "../../common/strategies/google.strategy";
+import { JwtStrategy } from "../../common/strategies/jwt.strategy";
 import { UserModule } from "../user/user.module";
 import { ConfigModule, ConfigService } from "@nestjs/config";
 

@@ -3,16 +3,17 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import {ConfigModule, ConfigService} from "@nestjs/config";
-import { UserModule } from './user/user.module';
-import {AuthModule} from "./auth/auth.module";
-import { TripModule } from './trip/trip.module';
-import { CarModule } from './car/car.module';
-import { FuelModule } from './fuel/fuel.module';
+import { UserModule } from './modules/user/user.module';
+import {AuthModule} from "./modules/auth/auth.module";
+import { TripModule } from './modules/trip/trip.module';
+import { CarModule } from './modules/car/car.module';
+import { FuelModule } from './modules/fuel/fuel.module';
 import { AnalysisModule } from './analysis/analysis.module';
-import { AccountModule } from './account/account.module';
-import { CategoryModule } from './category/category.module';
-import { TransactionModule } from './transaction/transaction.module';
-import { MaintenanceModule } from './maintenance/maintenance.module';
+import { AccountModule } from './modules/account/account.module';
+import { CategoryModule } from './modules/category/category.module';
+import { TransactionModule } from './modules/transaction/transaction.module';
+import { MaintenanceModule } from './modules/maintenance/maintenance.module';
+import { MoviesModule } from './modules/movies/movies.module';
 
 @Module({
   imports: [
@@ -43,7 +44,8 @@ import { MaintenanceModule } from './maintenance/maintenance.module';
       AccountModule,
       CategoryModule,
       TransactionModule,
-      MaintenanceModule
+      MaintenanceModule,
+      MoviesModule
   ],
   controllers: [AppController],
   providers: [AppService],
