@@ -8,7 +8,7 @@ import {FuelSeeder} from "./seeders/fuel.seeder";
 
 @Module({
   imports: [TypeOrmModule.forFeature([Fuel, Car])],
-  controllers: [FuelController, FuelSeeder],
-  providers: [FuelService],
+  controllers: [FuelController],
+  providers: [FuelService, FuelSeeder],
 })
 export class FuelModule {}
