@@ -15,6 +15,7 @@ import { TransactionModule } from './modules/transaction/transaction.module';
 import { MaintenanceModule } from './modules/maintenance/maintenance.module';
 import { MoviesModule } from './modules/movies/movies.module';
 import { SeriesModule } from './modules/series/series.module';
+import {WorkoutsModule} from "./modules/workout/workout.module";
 
 @Module({
   imports: [
@@ -47,7 +48,8 @@ import { SeriesModule } from './modules/series/series.module';
       TransactionModule,
       MaintenanceModule,
       MoviesModule,
-      SeriesModule
+      SeriesModule,
+      WorkoutsModule
   ],
   controllers: [AppController],
   providers: [AppService],
