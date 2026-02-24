@@ -1,23 +1,29 @@
 import {
-  Controller,
-  Get,
-  Post,
   Body,
-  Patch,
-  Param,
+  Controller,
   Delete,
-  UseGuards,
-  Req,
+  Get,
+  Param,
+  ParseIntPipe,
+  Patch,
+  Post,
   Query,
-  ParseIntPipe
+  Req,
+  UseGuards,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
-import { ApiTags, ApiBearerAuth, ApiOperation, ApiQuery } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiQuery,
+  ApiTags,
+} from '@nestjs/swagger';
 import { MoviesService } from './movies.service';
 import { CreateMovieDto } from './dto/create-movie.dto';
 import { UpdateMovieStatusDto } from './dto/update-movie.dto';
 import { MovieStatus } from './enums/movie-status.enum';
-import {MoviesSeeder} from "./seeders/movie.seeder";
+import { MoviesSeeder } from './seeders/movie.seeder';
+import { MovieParserService } from './external/movie.service';
 
 @ApiTags('Movies')
 @ApiBearerAuth()
@@ -25,9 +31,9 @@ import {MoviesSeeder} from "./seeders/movie.seeder";
 @Controller('movies')
 export class MoviesController {
   constructor(
-      private readonly moviesService: MoviesService,
-      private readonly moviesSeeder: MoviesSeeder,
-      ) {}
+    private readonly moviesService: MoviesService,
+    private readonly moviesSeeder: MoviesSeeder,
+  ) {}
 
   @Post()
   @ApiOperation({ summary: 'Додати фільм у список' })
@@ -64,9 +70,9 @@ export class MoviesController {
   @Patch(':id/watched')
   @ApiOperation({ summary: 'Відмітити як переглянуте та поставити оцінку' })
   markAsWatched(
-      @Req() req,
-      @Param('id', ParseIntPipe) id: number,
-      @Body() dto: UpdateMovieStatusDto,
+    @Req() req,
+    @Param('id', ParseIntPipe) id: number,
+    @Body() dto: UpdateMovieStatusDto,
   ) {
     return this.moviesService.markAsWatched(req.user.user_id, id, dto);
   }
@@ -80,5 +86,29 @@ export class MoviesController {
   @Post('seed')
   async seed(@Req() req) {
     return await this.moviesSeeder.seed(req.user.user_id);
+  }
+}
+
+@ApiTags('Movies - Discovery')
+@Controller('movies/discovery')
+export class MoviesDiscoveryController {
+  constructor(private readonly tmdbService: MovieParserService) {}
+
+  @Get('trending')
+  @ApiOperation({ summary: 'Тренди тижня' })
+  getTrending() {
+    return this.tmdbService.getTrending();
+  }
+
+  @Get('upcoming')
+  @ApiOperation({ summary: 'Очікувані новинки' })
+  getUpcoming() {
+    return this.tmdbService.getUpcoming();
+  }
+
+  @Get('popular')
+  @ApiOperation({ summary: 'Популярні' })
+  getPopular() {
+    return this.tmdbService.getPopular();
   }
 }
