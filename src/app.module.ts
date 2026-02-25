@@ -18,6 +18,7 @@ import { SeriesModule } from './modules/series/series.module';
 import {WorkoutsModule} from "./modules/workout/workout.module";
 import { MonobankModule } from './modules/monobank/monobank.module';
 import { WeatherModule } from './modules/weather/weather.module';
+import { ExportModule } from './export/export.module';
 
 @Module({
   imports: [
@@ -53,7 +54,8 @@ import { WeatherModule } from './modules/weather/weather.module';
       SeriesModule,
       WorkoutsModule,
       MonobankModule,
-      WeatherModule
+      WeatherModule,
+      ExportModule
   ],
   controllers: [AppController],
   providers: [AppService],
