@@ -14,79 +14,69 @@ import {
 import { AuthGuard } from '@nestjs/passport';
 import {
   ApiBearerAuth,
+  ApiBody,
   ApiOperation,
   ApiParam,
   ApiQuery,
   ApiTags,
 } from '@nestjs/swagger';
 import { MoviesService } from './movies.service';
-import { CreateMovieDto } from './dto/create-movie.dto';
-import { UpdateMovieStatusDto } from './dto/update-movie.dto';
-import { MovieStatus } from './enums/movie-status.enum';
-import { MoviesSeeder } from './seeders/movie.seeder';
+import { ChangeStatusDto, ManageMovieDto } from './dto/manage-movie.dto';
 import { MovieParserService } from './external/movie.service';
+import { MovieTypeEnum } from './enums/movie-type.enum';
 
-@ApiTags('Movies')
+@ApiTags('Movies - Lists')
 @ApiBearerAuth()
 @UseGuards(AuthGuard('jwt'))
 @Controller('movies')
 export class MoviesController {
-  constructor(
-    private readonly moviesService: MoviesService,
-    private readonly moviesSeeder: MoviesSeeder,
-  ) {}
+  constructor(private readonly moviesService: MoviesService) {}
 
-  @Post()
-  @ApiOperation({ summary: 'Додати фільм у список' })
-  create(@Req() req, @Body() dto: CreateMovieDto) {
-    return this.moviesService.addToList(req.user.user_id, dto);
-  }
-
-  @Get()
-  @ApiOperation({ summary: 'Отримати список усіх фільмів користувача' })
-  @ApiQuery({ name: 'status', enum: MovieStatus, required: false })
-  findAll(@Req() req, @Query('status') status?: MovieStatus) {
-    return this.moviesService.findAll(req.user.user_id, status);
-  }
-
-  @Get('stats')
-  @ApiOperation({ summary: 'Отримати статистику фільмів' })
-  getStats(@Req() req) {
-    return this.moviesService.getStats(req.user.user_id);
-  }
-
-  @Get('search')
-  @ApiOperation({ summary: 'Пошук по назві у власному списку' })
-  @ApiQuery({ name: 'title', type: String })
-  search(@Req() req, @Query('title') title: string) {
-    return this.moviesService.searchByTitle(req.user.user_id, title);
-  }
-
-  @Get(':id')
-  @ApiOperation({ summary: 'Отримати деталі фільму по ID' })
-  findOne(@Req() req, @Param('id', ParseIntPipe) id: number) {
-    return this.moviesService.findOne(req.user.user_id, id);
-  }
-
-  @Patch(':id/watched')
-  @ApiOperation({ summary: 'Відмітити як переглянуте та поставити оцінку' })
-  markAsWatched(
+  @Post(':list')
+  @ApiOperation({ summary: 'Додати фільм у вказаний список' })
+  @ApiParam({ name: 'list', enum: MovieTypeEnum })
+  @ApiBody({ type: ManageMovieDto })
+  add(
     @Req() req,
-    @Param('id', ParseIntPipe) id: number,
-    @Body() dto: UpdateMovieStatusDto,
+    @Param('list') list: MovieTypeEnum,
+    @Body() dto: ManageMovieDto,
   ) {
-    return this.moviesService.markAsWatched(req.user.user_id, id, dto);
+    return this.moviesService.addToList(req.user.user_id, list, dto);
   }
 
-  @Delete(':id')
+  @Get(':list')
+  @ApiOperation({ summary: 'Отримати фільми з вказаного списку' })
+  @ApiParam({ name: 'list', enum: MovieTypeEnum })
+  getList(@Req() req, @Param('list') list: MovieTypeEnum) {
+    return this.moviesService.getList(req.user.user_id, list);
+  }
+
+  @Patch(':tmdbId/status')
+  @ApiOperation({ summary: 'Змінити статус фільму (перемістити)' })
+  @ApiParam({ name: 'tmdbId' })
+  @ApiBody({ type: ChangeStatusDto })
+  changeStatus(
+    @Req() req,
+    @Param('tmdbId', ParseIntPipe) tmdbId: number,
+    @Body() dto: ChangeStatusDto,
+  ) {
+    return this.moviesService.changeStatus(
+      req.user.user_id,
+      tmdbId,
+      dto.target_list,
+    );
+  }
+
+  @Delete(':list/:tmdbId')
   @ApiOperation({ summary: 'Видалити фільм зі списку' })
-  remove(@Req() req, @Param('id', ParseIntPipe) id: number) {
-    return this.moviesService.remove(req.user.user_id, id);
-  }
-
-  @Post('seed')
-  async seed(@Req() req) {
-    return await this.moviesSeeder.seed(req.user.user_id);
+  @ApiParam({ name: 'list', enum: MovieTypeEnum })
+  @ApiParam({ name: 'tmdbId' })
+  remove(
+    @Req() req,
+    @Param('list') list: MovieTypeEnum,
+    @Param('tmdbId', ParseIntPipe) tmdbId: number,
+  ) {
+    return this.moviesService.removeFromList(req.user.user_id, list, tmdbId);
   }
 }
 

@@ -8,13 +8,24 @@ import {
 } from './movies.controller';
 import { Movie } from './entities/movie.entity';
 import { MovieDetails } from './entities/movie-details.entity';
-import { MoviesSeeder } from './seeders/movie.seeder';
+import { MovieWatchedEntity } from './entities/movie-watched.entity';
 import { MovieParserService } from './external/movie.service';
+import { MovieFavorite } from './entities/movie-favorites.entity';
+import { MovieWatchLater } from './entities/movie_watch_later.entity';
 
 @Module({
-  imports: [HttpModule, TypeOrmModule.forFeature([Movie, MovieDetails])],
+  imports: [
+    HttpModule,
+    TypeOrmModule.forFeature([
+      Movie,
+      MovieDetails,
+      MovieFavorite,
+      MovieWatchedEntity,
+      MovieWatchLater,
+    ]),
+  ],
   controllers: [MoviesController, MoviesDiscoveryController],
-  providers: [MoviesService, MoviesSeeder, MovieParserService],
+  providers: [MoviesService, MovieParserService],
   exports: [MoviesService],
 })
 export class MoviesModule {}
