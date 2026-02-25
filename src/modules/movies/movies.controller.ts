@@ -15,6 +15,7 @@ import { AuthGuard } from '@nestjs/passport';
 import {
   ApiBearerAuth,
   ApiOperation,
+  ApiParam,
   ApiQuery,
   ApiTags,
 } from '@nestjs/swagger';
@@ -89,26 +90,62 @@ export class MoviesController {
   }
 }
 
-@ApiTags('Movies - Discovery')
+@ApiTags('Movies - Discovery (External TMDB)')
 @Controller('movies/discovery')
 export class MoviesDiscoveryController {
   constructor(private readonly tmdbService: MovieParserService) {}
 
-  @Get('trending')
-  @ApiOperation({ summary: 'Тренди тижня' })
-  getTrending() {
-    return this.tmdbService.getTrending();
+  @Get('search')
+  @ApiOperation({ summary: 'Пошук фільму в глобальній базі TMDB за назвою' })
+  @ApiQuery({
+    name: 'query',
+    description: 'Назва фільму (напр. Inception)',
+    required: true,
+  })
+  search(@Query('query') query: string) {
+    return this.tmdbService.searchByTitle(query);
   }
 
-  @Get('upcoming')
-  @ApiOperation({ summary: 'Очікувані новинки' })
-  getUpcoming() {
-    return this.tmdbService.getUpcoming();
+  @Get('trending')
+  @ApiOperation({ summary: 'Тренди кіно (за тиждень або за день)' })
+  @ApiQuery({ name: 'timeWindow', enum: ['day', 'week'], required: false })
+  getTrending(@Query('timeWindow') timeWindow: 'day' | 'week' = 'week') {
+    return this.tmdbService.getTrending(timeWindow);
   }
 
   @Get('popular')
-  @ApiOperation({ summary: 'Популярні' })
-  getPopular() {
-    return this.tmdbService.getPopular();
+  @ApiOperation({ summary: 'Найпопулярніші фільми зараз' })
+  @ApiQuery({ name: 'page', type: Number, required: false, example: 1 })
+  getPopular(@Query('page') page: number = 1) {
+    return this.tmdbService.getPopular(page);
+  }
+
+  @Get('upcoming')
+  @ApiOperation({ summary: 'Новинки, які скоро вийдуть на екрани' })
+  @ApiQuery({
+    name: 'months',
+    description: 'Період у місяцях',
+    required: false,
+    example: 1,
+  })
+  getUpcoming(@Query('months') months: number = 1) {
+    return this.tmdbService.getUpcoming(months);
+  }
+
+  @Get(':tmdbId')
+  @ApiOperation({
+    summary: 'Отримати повні деталі фільму (включаючи акторів та відео)',
+  })
+  @ApiParam({ name: 'tmdbId', description: 'ID фільму в системі TMDB' })
+  getById(@Param('tmdbId', ParseIntPipe) tmdbId: number) {
+    return this.tmdbService.getById(tmdbId);
+  }
+
+  @Get(':tmdbId/credits')
+  @ApiOperation({
+    summary: 'Отримати тільки список акторів та знімальну групу',
+  })
+  getCredits(@Param('tmdbId', ParseIntPipe) tmdbId: number) {
+    return this.tmdbService.getMovieCredits(tmdbId);
   }
 }
