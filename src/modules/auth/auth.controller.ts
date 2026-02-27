@@ -18,7 +18,7 @@ export class AuthController {
         const user = await this.authService.validate(req.user);
         const jwt = this.authService.generateJwt(user);
 
-        const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000/ua/login-success';
+        const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000/login-success';
 
         const redirectUrl = `${frontendUrl}?token=${jwt}`;
 

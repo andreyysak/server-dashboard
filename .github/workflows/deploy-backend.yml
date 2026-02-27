@@ -1,0 +1,44 @@
+name: Deploy NestJS Backend
+
+on:
+  push:
+    branches: [ main ] # або develop
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build project
+        run: npm run build
+
+      - name: Deploy to Server
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY_BASE64 }}" | base64 -d > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H ${{ secrets.SERVER_HOST }} >> ~/.ssh/known_hosts
+          
+          # 1. Створюємо папку, якщо її немає
+          ssh -i ~/.ssh/id_rsa ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} "mkdir -p /var/www/backend"
+          
+          # 2. Копіюємо dist, package.json та lock файл
+          rsync -avz -e "ssh -i ~/.ssh/id_rsa" --delete ./dist ./package.json ./package-lock.json ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:/var/www/backend/
+          
+          # 3. Встановлюємо тільки production залежності та рестартуємо PM2
+          ssh -i ~/.ssh/id_rsa ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} "
+            cd /var/www/backend && \
+            npm install --omit=dev && \
+            pm2 restart nest-backend || pm2 start dist/main.js --name nest-backend
+          "
