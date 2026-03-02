@@ -18,10 +18,15 @@ async function bootstrap() {
   });
 
   app.enableCors({
-    origin: ['http://localhost:5187', 'http://localhost:5173'], // Додай всі порти, які використовуєш
+    origin: [
+      'http://localhost:5187',
+      'http://localhost:5173',
+      'http://8.211.44.164',
+      'http://8.211.44.164.nip.io',
+    ],
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
     credentials: true,
-    allowedHeaders: ['Content-Type', 'Authorization', 'Accept'], // Обов'язково додай Authorization
+    allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
   });
 
   app.useGlobalInterceptors(new ClassSerializerInterceptor(app.get(Reflector)))
