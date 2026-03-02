@@ -1,7 +1,11 @@
-import {NestFactory, Reflector} from '@nestjs/core';
+import { NestFactory, Reflector } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
-import {ClassSerializerInterceptor, ConsoleLogger, ValidationPipe} from "@nestjs/common";
+import {
+  ClassSerializerInterceptor,
+  ConsoleLogger,
+  ValidationPipe,
+} from '@nestjs/common';
 
 declare const module: any;
 
@@ -14,7 +18,7 @@ async function bootstrap() {
       sorted: true,
       json: true,
       compact: false,
-    })
+    }),
   });
 
   app.enableCors({
@@ -29,20 +33,22 @@ async function bootstrap() {
     allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
   });
 
-  app.useGlobalInterceptors(new ClassSerializerInterceptor(app.get(Reflector)))
+  app.useGlobalInterceptors(new ClassSerializerInterceptor(app.get(Reflector)));
 
-  app.useGlobalPipes(new ValidationPipe({
-    whitelist: true,
-    forbidNonWhitelisted: true,
-    transform: true,
-  }))
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true,
+      forbidNonWhitelisted: true,
+      transform: true,
+    }),
+  );
 
   const config = new DocumentBuilder()
-      .setTitle('Dashboard')
-      .setDescription('The dashboard API description')
-      .setVersion('1.0')
-      .addTag('dashboard')
-      .build()
+    .setTitle('Dashboard')
+    .setDescription('The dashboard API description')
+    .setVersion('1.0')
+    .addTag('dashboard')
+    .build();
   const documentFactory = () => SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, documentFactory);
 
@@ -50,7 +56,7 @@ async function bootstrap() {
 
   if (module.hot) {
     module.hot.accept();
-    module.hot.dispose(() => app.close())
+    module.hot.dispose(() => app.close());
   }
 }
 bootstrap();

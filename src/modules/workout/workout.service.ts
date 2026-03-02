@@ -8,8 +8,10 @@ import { CreateWorkoutDto } from './dto/create-workout.dto';
 @Injectable()
 export class WorkoutsService {
   constructor(
-      @InjectRepository(Workout) private readonly workoutRepository: Repository<Workout>,
-      @InjectRepository(Exercise) private readonly exerciseRepository: Repository<Exercise>,
+    @InjectRepository(Workout)
+    private readonly workoutRepository: Repository<Workout>,
+    @InjectRepository(Exercise)
+    private readonly exerciseRepository: Repository<Exercise>,
   ) {}
 
   async create(userId: number, dto: CreateWorkoutDto): Promise<Workout> {
@@ -18,8 +20,8 @@ export class WorkoutsService {
       user_id: userId,
       exercises: dto.exercises.map((ex, index) => ({
         ...ex,
-        order: ex.order ?? index
-      }))
+        order: ex.order ?? index,
+      })),
     });
 
     return await this.workoutRepository.save(workout);
@@ -29,14 +31,14 @@ export class WorkoutsService {
     return await this.workoutRepository.find({
       where: { user_id: userId },
       relations: ['exercises'],
-      order: { workout_date: 'DESC' }
+      order: { workout_date: 'DESC' },
     });
   }
 
   async findOne(userId: number, id: number): Promise<Workout> {
     const workout = await this.workoutRepository.findOne({
       where: { id, user_id: userId },
-      relations: ['exercises']
+      relations: ['exercises'],
     });
 
     if (!workout) throw new NotFoundException('Тренування не знайдено');
@@ -45,6 +47,7 @@ export class WorkoutsService {
 
   async remove(userId: number, id: number): Promise<void> {
     const result = await this.workoutRepository.delete({ id, user_id: userId });
-    if (result.affected === 0) throw new NotFoundException('Тренування не знайдено');
+    if (result.affected === 0)
+      throw new NotFoundException('Тренування не знайдено');
   }
 }

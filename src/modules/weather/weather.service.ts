@@ -1,7 +1,4 @@
-import {
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from '../user/entities/user.entity';
@@ -10,9 +7,9 @@ import { OpenWeatherClient } from './clients/open-weather.client';
 @Injectable()
 export class WeatherService {
   constructor(
-      @InjectRepository(User)
-      private readonly userRepository: Repository<User>,
-      private readonly client: OpenWeatherClient,
+    @InjectRepository(User)
+    private readonly userRepository: Repository<User>,
+    private readonly client: OpenWeatherClient,
   ) {}
 
   private async getUserCity(userId: number): Promise<string> {
@@ -40,9 +37,7 @@ export class WeatherService {
   async getTodayForecast(userId: number) {
     const forecast = await this.getFiveDays(userId);
     const today = new Date().toISOString().split('T')[0];
-    return forecast.list.filter(item =>
-        item.dt_txt.startsWith(today),
-    );
+    return forecast.list.filter((item) => item.dt_txt.startsWith(today));
   }
 
   async getNext24Hours(userId: number) {
@@ -52,12 +47,12 @@ export class WeatherService {
 
   async getTodayMin(userId: number) {
     const today = await this.getTodayForecast(userId);
-    return Math.min(...today.map(i => i.main.temp));
+    return Math.min(...today.map((i) => i.main.temp));
   }
 
   async getTodayMax(userId: number) {
     const today = await this.getTodayForecast(userId);
-    return Math.max(...today.map(i => i.main.temp));
+    return Math.max(...today.map((i) => i.main.temp));
   }
 
   async getTodayAverage(userId: number) {
@@ -68,33 +63,31 @@ export class WeatherService {
 
   async getRainProbability(userId: number) {
     const today = await this.getTodayForecast(userId);
-    return today.map(i => i.pop);
+    return today.map((i) => i.pop);
   }
 
   async getHottestTime(userId: number) {
     const forecast = await this.getFiveDays(userId);
     return forecast.list.reduce((prev, curr) =>
-        curr.main.temp > prev.main.temp ? curr : prev,
+      curr.main.temp > prev.main.temp ? curr : prev,
     );
   }
 
   async getColdestTime(userId: number) {
     const forecast = await this.getFiveDays(userId);
     return forecast.list.reduce((prev, curr) =>
-        curr.main.temp < prev.main.temp ? curr : prev,
+      curr.main.temp < prev.main.temp ? curr : prev,
     );
   }
 
   async getRainyPeriods(userId: number) {
     const forecast = await this.getFiveDays(userId);
-    return forecast.list.filter(
-        i => i.weather[0].main === 'Rain',
-    );
+    return forecast.list.filter((i) => i.weather[0].main === 'Rain');
   }
 
   async getStrongWind(userId: number) {
     const forecast = await this.getFiveDays(userId);
-    return forecast.list.filter(i => i.wind.speed > 10);
+    return forecast.list.filter((i) => i.wind.speed > 10);
   }
 
   async getSunTimes(userId: number) {
@@ -108,8 +101,8 @@ export class WeatherService {
   async getUV(userId: number) {
     const current = await this.getCurrent(userId);
     const oneCall = await this.client.getOneCall(
-        current.coord.lat,
-        current.coord.lon,
+      current.coord.lat,
+      current.coord.lon,
     );
 
     return oneCall.current.uvi;
@@ -118,8 +111,8 @@ export class WeatherService {
   async getSevenDays(userId: number) {
     const current = await this.getCurrent(userId);
     const oneCall = await this.client.getOneCall(
-        current.coord.lat,
-        current.coord.lon,
+      current.coord.lat,
+      current.coord.lon,
     );
 
     return oneCall.daily;
@@ -127,17 +120,14 @@ export class WeatherService {
 
   async getAirQuality(userId: number) {
     const current = await this.getCurrent(userId);
-    return this.client.getAirPollution(
-        current.coord.lat,
-        current.coord.lon,
-    );
+    return this.client.getAirPollution(current.coord.lat, current.coord.lon);
   }
 
   async getAlerts(userId: number) {
     const current = await this.getCurrent(userId);
     const oneCall = await this.client.getOneCall(
-        current.coord.lat,
-        current.coord.lon,
+      current.coord.lat,
+      current.coord.lon,
     );
 
     return oneCall.alerts || [];
@@ -145,20 +135,16 @@ export class WeatherService {
 
   async getWarmerThan(userId: number, temp: number) {
     const forecast = await this.getFiveDays(userId);
-    return forecast.list.filter(i => i.main.temp > temp);
+    return forecast.list.filter((i) => i.main.temp > temp);
   }
 
   async getByCondition(userId: number, condition: string) {
     const forecast = await this.getFiveDays(userId);
-    return forecast.list.filter(
-        i => i.weather[0].main === condition,
-    );
+    return forecast.list.filter((i) => i.weather[0].main === condition);
   }
 
   async getComfortablePeriods(userId: number) {
     const forecast = await this.getFiveDays(userId);
-    return forecast.list.filter(
-        i => i.main.temp >= 18 && i.main.temp <= 25,
-    );
+    return forecast.list.filter((i) => i.main.temp >= 18 && i.main.temp <= 25);
   }
 }

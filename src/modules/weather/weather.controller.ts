@@ -1,12 +1,12 @@
-import {
-  Controller,
-  Get,
-  Param,
-  ParseIntPipe,
-  Query,
-} from '@nestjs/common';
+import { Controller, Get, Param, ParseIntPipe, Query } from '@nestjs/common';
 import { WeatherService } from './weather.service';
-import { ApiOperation, ApiParam, ApiQuery, ApiTags, ApiResponse } from '@nestjs/swagger';
+import {
+  ApiOperation,
+  ApiParam,
+  ApiQuery,
+  ApiTags,
+  ApiResponse,
+} from '@nestjs/swagger';
 
 @ApiTags('Weather')
 @Controller('weather')
@@ -14,11 +14,15 @@ export class WeatherController {
   constructor(private readonly weatherService: WeatherService) {}
 
   @Get(':userId/current')
-  @ApiOperation({ summary: 'Поточна погода', description: 'Отримує актуальні дані про погоду для локації користувача' })
+  @ApiOperation({
+    summary: 'Поточна погода',
+    description: 'Отримує актуальні дані про погоду для локації користувача',
+  })
   @ApiParam({ name: 'userId', description: 'ID користувача' })
   getCurrent(@Param('userId', ParseIntPipe) userId: number) {
     return this.weatherService.getCurrent(userId);
-  }swa
+  }
+  swa;
 
   @Get(':userId/forecast/5-days')
   @ApiOperation({ summary: 'Прогноз на 5 днів' })
@@ -119,20 +123,30 @@ export class WeatherController {
 
   @Get(':userId/filter/warmer-than')
   @ApiOperation({ summary: 'Періоди, коли температура вища за вказану' })
-  @ApiQuery({ name: 'temp', description: 'Поріг температури (°C)', type: Number })
+  @ApiQuery({
+    name: 'temp',
+    description: 'Поріг температури (°C)',
+    type: Number,
+  })
   getWarmerThan(
-      @Param('userId', ParseIntPipe) userId: number,
-      @Query('temp', ParseIntPipe) temp: number,
+    @Param('userId', ParseIntPipe) userId: number,
+    @Query('temp', ParseIntPipe) temp: number,
   ) {
     return this.weatherService.getWarmerThan(userId, temp);
   }
 
   @Get(':userId/filter/by-condition')
-  @ApiOperation({ summary: 'Фільтр прогнозів за станом погоди (напр. Rain, Clear)' })
-  @ApiQuery({ name: 'condition', description: 'Стан погоди (Rain, Clouds, Clear тощо)', type: String })
+  @ApiOperation({
+    summary: 'Фільтр прогнозів за станом погоди (напр. Rain, Clear)',
+  })
+  @ApiQuery({
+    name: 'condition',
+    description: 'Стан погоди (Rain, Clouds, Clear тощо)',
+    type: String,
+  })
   getByCondition(
-      @Param('userId', ParseIntPipe) userId: number,
-      @Query('condition') condition: string,
+    @Param('userId', ParseIntPipe) userId: number,
+    @Query('condition') condition: string,
   ) {
     return this.weatherService.getByCondition(userId, condition);
   }

@@ -1,35 +1,35 @@
-import {UserService} from "./user.service";
-import {Repository} from "typeorm";
-import {User} from './entities/user.entity'
-import {Test, TestingModule} from "@nestjs/testing";
-import {getRepositoryToken} from "@nestjs/typeorm";
-import {NotFoundException} from "@nestjs/common";
+import { UserService } from './user.service';
+import { Repository } from 'typeorm';
+import { User } from './entities/user.entity';
+import { Test, TestingModule } from '@nestjs/testing';
+import { getRepositoryToken } from '@nestjs/typeorm';
+import { NotFoundException } from '@nestjs/common';
 
 describe('UserService', () => {
-  let service: UserService
-  let repo: Repository<User>
+  let service: UserService;
+  let repo: Repository<User>;
 
   const mockUserRepository = {
     findOneBy: jest.fn(),
     findOne: jest.fn(),
     create: jest.fn(),
     save: jest.fn(),
-  }
+  };
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
-          UserService,
+        UserService,
         {
           provide: getRepositoryToken(User),
-          useValue: mockUserRepository
-        }
-      ]
-    }).compile()
+          useValue: mockUserRepository,
+        },
+      ],
+    }).compile();
 
-    service = module.get<UserService>(UserService)
-    repo = module.get<Repository<User>>(getRepositoryToken(User))
-  })
+    service = module.get<UserService>(UserService);
+    repo = module.get<Repository<User>>(getRepositoryToken(User));
+  });
 
   it('should be defined', () => {
     expect(service).toBeDefined();
@@ -51,4 +51,4 @@ describe('UserService', () => {
       await expect(service.getUser(1)).rejects.toThrow(NotFoundException);
     });
   });
-})
+});

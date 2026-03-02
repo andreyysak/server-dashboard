@@ -1,9 +1,19 @@
-import { Controller, Get, Post, Body, Param, Delete, UseGuards, Req, ParseIntPipe } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Param,
+  Delete,
+  UseGuards,
+  Req,
+  ParseIntPipe,
+} from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
 import { CreateWorkoutDto } from './dto/create-workout.dto';
-import {WorkoutsService} from "./workout.service";
-import {WorkoutsSeeder} from "./seeders/workout.seeder";
+import { WorkoutsService } from './workout.service';
+import { WorkoutsSeeder } from './seeders/workout.seeder';
 
 @ApiTags('Workouts')
 @ApiBearerAuth()
@@ -11,8 +21,8 @@ import {WorkoutsSeeder} from "./seeders/workout.seeder";
 @Controller('workouts')
 export class WorkoutsController {
   constructor(
-      private readonly workoutsService: WorkoutsService,
-      private readonly workoutsSeeder: WorkoutsSeeder,
+    private readonly workoutsService: WorkoutsService,
+    private readonly workoutsSeeder: WorkoutsSeeder,
   ) {}
 
   @Post()

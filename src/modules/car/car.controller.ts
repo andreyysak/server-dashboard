@@ -8,14 +8,14 @@ import {
   Delete,
   UseGuards,
   Req,
-  ParseIntPipe
+  ParseIntPipe,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { CarService } from './car.service';
 import { CreateCarDto } from './dto/create-car.dto';
 import { UpdateCarDto } from './dto/update-car.dto';
-import {CarsSeeder} from "./seeders/car.seeder";
+import { CarsSeeder } from './seeders/car.seeder';
 
 @ApiTags('Cars')
 @ApiBearerAuth()
@@ -23,8 +23,8 @@ import {CarsSeeder} from "./seeders/car.seeder";
 @Controller('cars')
 export class CarController {
   constructor(
-      private readonly carService: CarService,
-      private readonly carSeeder: CarsSeeder,
+    private readonly carService: CarService,
+    private readonly carSeeder: CarsSeeder,
   ) {}
 
   @Post()
@@ -49,9 +49,9 @@ export class CarController {
   @Patch(':id')
   @ApiOperation({ summary: 'Оновити дані автомобіля' })
   async update(
-      @Req() req,
-      @Param('id', ParseIntPipe) id: number,
-      @Body() updateCarDto: UpdateCarDto
+    @Req() req,
+    @Param('id', ParseIntPipe) id: number,
+    @Body() updateCarDto: UpdateCarDto,
   ) {
     return await this.carService.update(req.user.user_id, id, updateCarDto);
   }

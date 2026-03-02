@@ -9,14 +9,14 @@ import {
   UseGuards,
   Req,
   Query,
-  ParseIntPipe
+  ParseIntPipe,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { FuelService } from './fuel.service';
 import { CreateFuelDto } from './dto/create-fuel.dto';
 import { UpdateFuelDto } from './dto/update-fuel.dto';
-import {FuelSeeder} from "./seeders/fuel.seeder";
+import { FuelSeeder } from './seeders/fuel.seeder';
 
 @ApiTags('Fuel')
 @ApiBearerAuth()
@@ -24,8 +24,8 @@ import {FuelSeeder} from "./seeders/fuel.seeder";
 @Controller('fuel')
 export class FuelController {
   constructor(
-      private readonly fuelService: FuelService,
-      private readonly fuelSeeder: FuelSeeder,
+    private readonly fuelService: FuelService,
+    private readonly fuelSeeder: FuelSeeder,
   ) {}
 
   @Post()
@@ -35,9 +35,14 @@ export class FuelController {
   }
 
   @Get()
-  @ApiOperation({ summary: 'Отримати всі заправки (можна фільтрувати за carId)' })
+  @ApiOperation({
+    summary: 'Отримати всі заправки (можна фільтрувати за carId)',
+  })
   async findAll(@Req() req, @Query('carId') carId?: number) {
-    return await this.fuelService.getAll(req.user.user_id, carId ? Number(carId) : undefined);
+    return await this.fuelService.getAll(
+      req.user.user_id,
+      carId ? Number(carId) : undefined,
+    );
   }
 
   @Get(':id')
@@ -49,11 +54,15 @@ export class FuelController {
   @Patch(':id')
   @ApiOperation({ summary: 'Оновити дані про заправку' })
   async update(
-      @Req() req,
-      @Param('id', ParseIntPipe) id: number,
-      @Body() updateFuelDto: UpdateFuelDto
+    @Req() req,
+    @Param('id', ParseIntPipe) id: number,
+    @Body() updateFuelDto: UpdateFuelDto,
   ) {
-    return await this.fuelService.updateFuel(req.user.user_id, id, updateFuelDto);
+    return await this.fuelService.updateFuel(
+      req.user.user_id,
+      id,
+      updateFuelDto,
+    );
   }
 
   @Delete(':id')

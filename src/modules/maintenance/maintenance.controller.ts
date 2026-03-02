@@ -4,8 +4,8 @@ import {
   ApiOperation,
   ApiResponse,
   ApiQuery,
-  ApiParam
-} from "@nestjs/swagger";
+  ApiParam,
+} from '@nestjs/swagger';
 import {
   Body,
   Controller,
@@ -17,13 +17,13 @@ import {
   Post,
   Query,
   Req,
-  UseGuards
-} from "@nestjs/common";
-import { AuthGuard } from "@nestjs/passport";
-import { MaintenanceService } from "./maintenance.service";
-import { CreateMaintenanceDto } from "./dto/create-maintenance.dto";
-import { UpdateMaintenanceDto } from "./dto/update-maintenance.dto";
-import { MaintenanceSeeder } from "./seeders/maintenance.seeder";
+  UseGuards,
+} from '@nestjs/common';
+import { AuthGuard } from '@nestjs/passport';
+import { MaintenanceService } from './maintenance.service';
+import { CreateMaintenanceDto } from './dto/create-maintenance.dto';
+import { UpdateMaintenanceDto } from './dto/update-maintenance.dto';
+import { MaintenanceSeeder } from './seeders/maintenance.seeder';
 
 @ApiTags('Vehicle Maintenance') // Групуємо для зручності
 @ApiBearerAuth()
@@ -31,8 +31,8 @@ import { MaintenanceSeeder } from "./seeders/maintenance.seeder";
 @Controller('maintenance')
 export class MaintenanceController {
   constructor(
-      private readonly maintenanceService: MaintenanceService,
-      private readonly maintenanceSeeder: MaintenanceSeeder,
+    private readonly maintenanceService: MaintenanceService,
+    private readonly maintenanceSeeder: MaintenanceSeeder,
   ) {}
 
   @Post()
@@ -44,10 +44,17 @@ export class MaintenanceController {
 
   @Get()
   @ApiOperation({ summary: 'Отримати всі записи ТО' })
-  @ApiQuery({ name: 'carId', required: false, description: 'Фільтрація по конкретному автомобілю' })
+  @ApiQuery({
+    name: 'carId',
+    required: false,
+    description: 'Фільтрація по конкретному автомобілю',
+  })
   @ApiResponse({ status: 200, description: 'Список записів отримано' })
   findAll(@Req() req, @Query('carId') carId?: string) {
-    return this.maintenanceService.findAll(req.user.user_id, carId ? +carId : undefined);
+    return this.maintenanceService.findAll(
+      req.user.user_id,
+      carId ? +carId : undefined,
+    );
   }
 
   @Get(':id')
@@ -61,9 +68,9 @@ export class MaintenanceController {
   @ApiOperation({ summary: 'Оновити дані про ТО' })
   @ApiParam({ name: 'id', description: 'ID запису обслуговування' })
   update(
-      @Req() req,
-      @Param('id', ParseIntPipe) id: number,
-      @Body() dto: UpdateMaintenanceDto
+    @Req() req,
+    @Param('id', ParseIntPipe) id: number,
+    @Body() dto: UpdateMaintenanceDto,
   ) {
     return this.maintenanceService.update(req.user.user_id, id, dto);
   }
@@ -77,7 +84,10 @@ export class MaintenanceController {
   }
 
   @Post('seed')
-  @ApiOperation({ summary: 'Генерація тестових даних ТО', description: 'Створює випадкові записи про сервіс для авто користувача' })
+  @ApiOperation({
+    summary: 'Генерація тестових даних ТО',
+    description: 'Створює випадкові записи про сервіс для авто користувача',
+  })
   async seed(@Req() req) {
     return await this.maintenanceSeeder.seed(req.user.user_id);
   }

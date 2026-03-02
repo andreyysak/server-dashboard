@@ -1,11 +1,23 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Req, Query, ParseIntPipe } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  UseGuards,
+  Req,
+  Query,
+  ParseIntPipe,
+} from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
 import { SeriesService } from './series.service';
 import { CreateSeriesDto } from './dto/create-series.dto';
 import { SeriesStatus } from './enums/series-status.enum';
-import {UpdateSeriesProgressDto} from "./dto/update-series.dto";
-import {SeriesSeeder} from "./seeders/series.seeder";
+import { UpdateSeriesProgressDto } from './dto/update-series.dto';
+import { SeriesSeeder } from './seeders/series.seeder';
 
 @ApiTags('Series')
 @ApiBearerAuth()
@@ -13,8 +25,8 @@ import {SeriesSeeder} from "./seeders/series.seeder";
 @Controller('series')
 export class SeriesController {
   constructor(
-      private readonly seriesService: SeriesService,
-      private readonly seriesSeeder: SeriesSeeder,
+    private readonly seriesService: SeriesService,
+    private readonly seriesSeeder: SeriesSeeder,
   ) {}
 
   @Post()
@@ -37,7 +49,11 @@ export class SeriesController {
 
   @Patch(':id/progress')
   @ApiOperation({ summary: 'Оновити прогрес перегляду (сезон/серія/оцінка)' })
-  updateProgress(@Req() req, @Param('id', ParseIntPipe) id: number, @Body() dto: UpdateSeriesProgressDto) {
+  updateProgress(
+    @Req() req,
+    @Param('id', ParseIntPipe) id: number,
+    @Body() dto: UpdateSeriesProgressDto,
+  ) {
     return this.seriesService.updateProgress(req.user.user_id, id, dto);
   }
 

@@ -1,16 +1,21 @@
-import {ForbiddenException, Injectable, InternalServerErrorException, NotFoundException} from "@nestjs/common";
-import {InjectRepository} from "@nestjs/typeorm";
-import {Fuel} from "./entities/fuel.entity";
-import {Car} from "../car/entities/car.entity";
-import {Repository} from "typeorm";
-import {CreateFuelDto} from "./dto/create-fuel.dto";
-import {UpdateFuelDto} from "./dto/update-fuel.dto";
+import {
+  ForbiddenException,
+  Injectable,
+  InternalServerErrorException,
+  NotFoundException,
+} from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Fuel } from './entities/fuel.entity';
+import { Car } from '../car/entities/car.entity';
+import { Repository } from 'typeorm';
+import { CreateFuelDto } from './dto/create-fuel.dto';
+import { UpdateFuelDto } from './dto/update-fuel.dto';
 
 @Injectable()
 export class FuelService {
   constructor(
-      @InjectRepository(Fuel) private readonly fuelRepository: Repository<Fuel>,
-      @InjectRepository(Car) private readonly carRepository: Repository<Car>
+    @InjectRepository(Fuel) private readonly fuelRepository: Repository<Fuel>,
+    @InjectRepository(Car) private readonly carRepository: Repository<Car>,
   ) {}
 
   async getAll(userId: number, carId?: number): Promise<Fuel[]> {
@@ -23,7 +28,7 @@ export class FuelService {
     return await this.fuelRepository.find({
       where,
       order: { created_at: 'DESC' },
-      relations: ['car']
+      relations: ['car'],
     });
   }
 
@@ -31,22 +36,27 @@ export class FuelService {
     const fuel = await this.fuelRepository.findOne({
       where: {
         user_id: userId,
-        gas_id: fuelId
-      }
+        gas_id: fuelId,
+      },
     });
 
     if (!fuel) {
-      throw new NotFoundException(`Fuel with ID ${fuelId} for user ${userId} not found`);
+      throw new NotFoundException(
+        `Fuel with ID ${fuelId} for user ${userId} not found`,
+      );
     }
 
     return fuel;
   }
 
-  async createFuel(userId: number, createFuelDto: CreateFuelDto): Promise<Fuel> {
+  async createFuel(
+    userId: number,
+    createFuelDto: CreateFuelDto,
+  ): Promise<Fuel> {
     const { car_id, station, price, liters } = createFuelDto;
 
     const car = await this.carRepository.findOne({
-      where: { car_id, user_id: userId }
+      where: { car_id, user_id: userId },
     });
 
     if (!car) {
@@ -59,19 +69,21 @@ export class FuelService {
         car_id,
         liters,
         price,
-        station
+        station,
       });
 
       return await this.fuelRepository.save(newFuel);
     } catch (error) {
-      throw new InternalServerErrorException(`Failed to create fuel: ${error.message}`);
+      throw new InternalServerErrorException(
+        `Failed to create fuel: ${error.message}`,
+      );
     }
   }
 
   async deleteFull(userId: number, fuelId: number): Promise<void> {
     const result = await this.fuelRepository.delete({
       gas_id: fuelId,
-      user_id: userId
+      user_id: userId,
     });
 
     if (result.affected === 0) {
@@ -79,12 +91,16 @@ export class FuelService {
     }
   }
 
-  async updateFuel(userId: number, fuelId: number, updateFuelDto: UpdateFuelDto): Promise<Fuel> {
+  async updateFuel(
+    userId: number,
+    fuelId: number,
+    updateFuelDto: UpdateFuelDto,
+  ): Promise<Fuel> {
     const fuel = await this.fuelRepository.findOne({
       where: {
         gas_id: fuelId,
-        user_id: userId
-      }
+        user_id: userId,
+      },
     });
 
     if (!fuel) {
@@ -93,11 +109,13 @@ export class FuelService {
 
     if (updateFuelDto.car_id) {
       const car = await this.carRepository.findOne({
-        where: { car_id: updateFuelDto.car_id, user_id: userId }
+        where: { car_id: updateFuelDto.car_id, user_id: userId },
       });
 
       if (!car) {
-        throw new ForbiddenException(`Access denied to car with ID ${updateFuelDto.car_id}`);
+        throw new ForbiddenException(
+          `Access denied to car with ID ${updateFuelDto.car_id}`,
+        );
       }
     }
 
@@ -105,7 +123,9 @@ export class FuelService {
       Object.assign(fuel, updateFuelDto);
       return await this.fuelRepository.save(fuel);
     } catch (e) {
-      throw new InternalServerErrorException(`Failed to update fuel: ${e.message}`);
+      throw new InternalServerErrorException(
+        `Failed to update fuel: ${e.message}`,
+      );
     }
   }
 }

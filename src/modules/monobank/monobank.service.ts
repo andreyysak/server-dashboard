@@ -12,33 +12,41 @@ export class MonobankService {
   private readonly MONO_API_URL = 'https://api.monobank.ua';
 
   constructor(
-      private readonly httpService: HttpService,
-      @InjectRepository(Account) private readonly accountRepo: Repository<Account>,
-      @InjectRepository(Transaction) private readonly transactionRepo: Repository<Transaction>,
-      @InjectRepository(Category) private readonly categoryRepo: Repository<Category>,
+    private readonly httpService: HttpService,
+    @InjectRepository(Account)
+    private readonly accountRepo: Repository<Account>,
+    @InjectRepository(Transaction)
+    private readonly transactionRepo: Repository<Transaction>,
+    @InjectRepository(Category)
+    private readonly categoryRepo: Repository<Category>,
   ) {}
 
   async getClientInfo(token: string) {
     try {
       const response = await firstValueFrom(
-          this.httpService.get(`${this.MONO_API_URL}/personal/client-info`, {
-            headers: { 'X-Token': token },
-          }),
+        this.httpService.get(`${this.MONO_API_URL}/personal/client-info`, {
+          headers: { 'X-Token': token },
+        }),
       );
       return response.data;
     } catch (error) {
       throw new HttpException(
-          error.response?.data?.errorDescription || 'Mono API Error',
-          HttpStatus.BAD_GATEWAY,
+        error.response?.data?.errorDescription || 'Mono API Error',
+        HttpStatus.BAD_GATEWAY,
       );
     }
   }
 
   async syncTransactions(userId: number, token: string, accountId: number) {
-    const account = await this.accountRepo.findOne({ where: { account_id: accountId, user_id: userId } });
+    const account = await this.accountRepo.findOne({
+      where: { account_id: accountId, user_id: userId },
+    });
 
     if (!account || !account.mono_account_id) {
-      throw new HttpException('Account not found or mono_account_id missing', HttpStatus.NOT_FOUND);
+      throw new HttpException(
+        'Account not found or mono_account_id missing',
+        HttpStatus.NOT_FOUND,
+      );
     }
 
     const now = Math.floor(Date.now() / 1000);
@@ -46,10 +54,10 @@ export class MonobankService {
 
     try {
       const { data } = await firstValueFrom(
-          this.httpService.get(
-              `${this.MONO_API_URL}/personal/statement/${account.mono_account_id}/${from}/${now}`,
-              { headers: { 'X-Token': token } },
-          ),
+        this.httpService.get(
+          `${this.MONO_API_URL}/personal/statement/${account.mono_account_id}/${from}/${now}`,
+          { headers: { 'X-Token': token } },
+        ),
       );
 
       let importedCount = 0;
@@ -62,8 +70,8 @@ export class MonobankService {
             user_id: userId,
             account_id: accountId,
             created_at: transactionDate,
-            amount: item.amount / 100
-          }
+            amount: item.amount / 100,
+          },
         });
 
         if (!exists) {
@@ -88,54 +96,37 @@ export class MonobankService {
         await this.accountRepo.save(account);
       }
 
-      return { success: true, imported: importedCount, currentBalance: account.balance };
+      return {
+        success: true,
+        imported: importedCount,
+        currentBalance: account.balance,
+      };
     } catch (error) {
       if (error.response?.status === 429) {
-        throw new HttpException('Too many requests to Monobank API. Wait 60s.', HttpStatus.TOO_MANY_REQUESTS);
+        throw new HttpException(
+          'Too many requests to Monobank API. Wait 60s.',
+          HttpStatus.TOO_MANY_REQUESTS,
+        );
       }
-      throw new HttpException('Failed to sync transactions', HttpStatus.INTERNAL_SERVER_ERROR);
+      throw new HttpException(
+        'Failed to sync transactions',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
   }
 
-  private async mapMccToCategoryId(userId: number, mcc: number): Promise<number> {
+  private async mapMccToCategoryId(
+    userId: number,
+    mcc: number,
+  ): Promise<number> {
     let categoryName = 'Інше';
 
     const mccMap: Record<string, number[]> = {
-      'Продукти': [
-        5411,
-        5422,
-        5441,
-        5451,
-        5462,
-        5499
-      ],
-      'Розваги': [
-        5812,
-        5813,
-        5814,
-        7832,
-        7922,
-        7991,
-        7996
-      ],
-      'Транспорт': [
-        4111,
-        4121,
-        5541,
-        5542,
-        7523
-      ],
-      'Здоров’я': [
-        5912,
-        8011,
-        8021,
-        8099
-      ],
-      'Комуналка': [
-        4900,
-        4814,
-        4899
-      ]
+      Продукти: [5411, 5422, 5441, 5451, 5462, 5499],
+      Розваги: [5812, 5813, 5814, 7832, 7922, 7991, 7996],
+      Транспорт: [4111, 4121, 5541, 5542, 7523],
+      'Здоров’я': [5912, 8011, 8021, 8099],
+      Комуналка: [4900, 4814, 4899],
     };
 
     for (const [name, codes] of Object.entries(mccMap)) {
@@ -146,12 +137,12 @@ export class MonobankService {
     }
 
     const category = await this.categoryRepo.findOne({
-      where: { name: categoryName, user_id: userId }
+      where: { name: categoryName, user_id: userId },
     });
 
     if (!category) {
       const defaultCategory = await this.categoryRepo.findOne({
-        where: { user_id: userId }
+        where: { user_id: userId },
       });
       return defaultCategory ? defaultCategory.category_id : 1;
     }

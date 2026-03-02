@@ -1,45 +1,48 @@
 import {
-    Column,
-    CreateDateColumn,
-    Entity,
-    Index,
-    JoinColumn,
-    ManyToOne,
-    PrimaryGeneratedColumn,
-    UpdateDateColumn
-} from "typeorm";
-import {User} from "../../user/entities/user.entity";
-import {Car} from "../../car/entities/car.entity";
+  Column,
+  CreateDateColumn,
+  Entity,
+  Index,
+  JoinColumn,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
+} from 'typeorm';
+import { User } from '../../user/entities/user.entity';
+import { Car } from '../../car/entities/car.entity';
 
 @Entity('trips')
 export class Trip {
-    @PrimaryGeneratedColumn()
-    trip_id: number
+  @PrimaryGeneratedColumn()
+  trip_id: number;
 
-    @Index()
-    @Column()
-    user_id: number
+  @Index()
+  @Column()
+  user_id: number;
 
-    @Column()
-    car_id: number;
+  @Column()
+  car_id: number;
 
-    @Column({ type: 'float' })
-    kilometres: number;
+  @Column({ type: 'float' })
+  kilometres: number;
 
-    @Column()
-    direction: string;
+  @Column({ type: 'float', nullable: true })
+  distance: number;
 
-    @CreateDateColumn()
-    created_at: Date;
+  @Column()
+  direction: string;
 
-    @UpdateDateColumn()
-    updated_at: Date;
+  @CreateDateColumn()
+  created_at: Date;
 
-    @ManyToOne(() => User, (user) => user.trips, { onDelete: 'CASCADE' })
-    @JoinColumn({ name: 'userId' })
-    user: User;
+  @UpdateDateColumn()
+  updated_at: Date;
 
-    @ManyToOne(() => Car, (car) => car.trips, { onDelete: 'CASCADE' })
-    @JoinColumn({ name: 'car_id' })
-    car: Car;
+  @ManyToOne(() => User, (user) => user.trips, { onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'userId' })
+  user: User;
+
+  @ManyToOne(() => Car, (car) => car.trips, { onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'car_id' })
+  car: Car;
 }

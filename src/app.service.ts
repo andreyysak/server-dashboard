@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { DataSource } from "typeorm";
+import { DataSource } from 'typeorm';
 import * as os from 'os';
 
 @Injectable()
@@ -7,7 +7,7 @@ export class AppService {
   constructor(private readonly dataSource: DataSource) {}
 
   getStart(): string {
-    return 'Dashboard API v1.0 is running...'
+    return 'Dashboard API v1.0 is running...';
   }
 
   async getHealth() {
@@ -54,7 +54,7 @@ export class AppService {
       swagger: '/api',
       totalModules: 12,
       activeStrategies: ['jwt', 'google'],
-    }
+    };
   }
 
   getConfig() {
@@ -63,7 +63,7 @@ export class AppService {
       maxUploadSize: '5MB',
       supportedCurrencies: ['UAH', 'USD', 'EUR'],
       apiPrefix: '/api/v1',
-      timezone: Intl.DateTimeFormat().resolvedOptions().timeZone
+      timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
     };
   }
 

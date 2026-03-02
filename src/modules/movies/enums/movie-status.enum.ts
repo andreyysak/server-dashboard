@@ -1,4 +1,4 @@
 export enum MovieStatus {
-    WATCHED = 'watched',
-    WATCH_LATER = 'watch_later',
+  WATCHED = 'watched',
+  WATCH_LATER = 'watch_later',
 }

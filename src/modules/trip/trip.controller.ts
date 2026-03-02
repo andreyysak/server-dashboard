@@ -9,14 +9,14 @@ import {
   UseGuards,
   Req,
   Query,
-  ParseIntPipe
+  ParseIntPipe,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { TripService } from './trip.service';
 import { CreateTripDto } from './dto/create-trip.dto';
 import { UpdateTripDto } from './dto/update-trip.dto';
-import {TripSeeder} from "./seeders/trip.seeder";
+import { TripSeeder } from './seeders/trip.seeder';
 
 @ApiTags('Trips')
 @ApiBearerAuth()
@@ -24,8 +24,8 @@ import {TripSeeder} from "./seeders/trip.seeder";
 @Controller('trips')
 export class TripController {
   constructor(
-      private readonly tripService: TripService,
-      private readonly tripSeeder: TripSeeder,
+    private readonly tripService: TripService,
+    private readonly tripSeeder: TripSeeder,
   ) {}
 
   @Post()
@@ -35,21 +35,23 @@ export class TripController {
   }
 
   @Get()
-  @ApiOperation({ summary: 'Отримати всі поїздки (можна фільтрувати за carId)' })
-  async findAll(
-      @Req() req,
-      @Query('carId') carId?: number
-  ) {
-    return await this.tripService.getAllTrips(req.user.user_id, carId ? Number(carId) : undefined);
+  @ApiOperation({
+    summary: 'Отримати всі поїздки (можна фільтрувати за carId)',
+  })
+  async findAll(@Req() req, @Query('carId') carId?: number) {
+    return await this.tripService.getAllTrips(
+      req.user.user_id,
+      carId ? Number(carId) : undefined,
+    );
   }
 
   @Get('directions')
   @ApiOperation({ summary: 'Отримати список унікальних напрямків' })
-  async getDirections(
-      @Req() req,
-      @Query('carId') carId?: number
-  ) {
-    return await this.tripService.getTripDirections(req.user.user_id, carId ? Number(carId) : undefined);
+  async getDirections(@Req() req, @Query('carId') carId?: number) {
+    return await this.tripService.getTripDirections(
+      req.user.user_id,
+      carId ? Number(carId) : undefined,
+    );
   }
 
   @Get(':id')
@@ -61,11 +63,15 @@ export class TripController {
   @Patch(':id')
   @ApiOperation({ summary: 'Оновити дані поїздки' })
   async update(
-      @Req() req,
-      @Param('id', ParseIntPipe) id: number,
-      @Body() updateTripDto: UpdateTripDto
+    @Req() req,
+    @Param('id', ParseIntPipe) id: number,
+    @Body() updateTripDto: UpdateTripDto,
   ) {
-    return await this.tripService.updateTrip(req.user.user_id, id, updateTripDto);
+    return await this.tripService.updateTrip(
+      req.user.user_id,
+      id,
+      updateTripDto,
+    );
   }
 
   @Delete(':id')
@@ -77,5 +83,12 @@ export class TripController {
   @Post('seed')
   async seed(@Req() req) {
     return await this.tripSeeder.seed(req.user.user_id);
+  }
+
+  @Post('recalculate-all')
+  @ApiOperation({ summary: 'Перерахувати дистанцію для всіх існуючих поїздок' })
+  async recalculateAll() {
+    await this.tripService.recalculateAllUsersDistances();
+    return { message: 'Усі дистанції успішно перераховано' };
   }
 }
