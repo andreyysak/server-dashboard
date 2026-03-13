@@ -119,8 +119,6 @@ export class MonobankService {
     }
   }
 
-  // --- НОВІ ФУНКЦІЇ ---
-
   async getSavedCards(userId: number): Promise<MonoCard[]> {
     return await this.cardRepo.find({
       where: { user_id: userId },
@@ -140,7 +138,36 @@ export class MonobankService {
     return card;
   }
 
-  // --------------------
+  async initializeAccountsFromCards(userId: number) {
+    const savedCards = await this.cardRepo.find({ where: { user_id: userId } });
+    let createdCount = 0;
+
+    for (const card of savedCards) {
+      const existingAccount = await this.accountRepo.findOne({
+        where: { mono_account_id: card.mono_account_id, user_id: userId },
+      });
+
+      if (!existingAccount) {
+        const newAccount = this.accountRepo.create({
+          user_id: userId,
+          name: `Mono: ${card.name} (${card.type})`,
+          balance: card.balance,
+          currency:
+            card.currency_code === 980
+              ? 'UAH'
+              : card.currency_code === 840
+                ? 'USD'
+                : ('EUR' as any),
+          mono_account_id: card.mono_account_id,
+        });
+
+        await this.accountRepo.save(newAccount);
+        createdCount++;
+      }
+    }
+
+    return { success: true, accountsCreated: createdCount };
+  }
 
   private async upsertCard(
     userId: number,

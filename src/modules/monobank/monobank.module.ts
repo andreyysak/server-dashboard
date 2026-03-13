@@ -12,8 +12,8 @@ import { MonoCard } from './entities/mono-card.entity';
 
 @Module({
   imports: [
-    HttpModule,
     ConfigModule,
+    HttpModule,
     TypeOrmModule.forFeature([Account, Transaction, Category, MonoCard]),
   ],
   controllers: [MonobankController],

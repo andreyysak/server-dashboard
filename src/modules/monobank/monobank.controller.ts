@@ -41,31 +41,28 @@ export class MonobankController {
   ) {}
 
   @Get('client-info')
-  @ApiOperation({ summary: 'Інформація про клієнта та рахунки з API Monobank' })
+  @ApiOperation({
+    summary: 'Синхронізувати інфо клієнта та оновити список карток',
+  })
   @ApiQuery({ name: 'token', required: false })
   async getInfo(@Req() req: RequestWithUser, @Query('token') token?: string) {
     const apiToken =
       token || this.configService.get<string>('MONOBANK_API_TOKEN');
-    if (!apiToken) {
+    if (!apiToken)
       throw new HttpException('Token missing', HttpStatus.UNAUTHORIZED);
-    }
+
     return this.monobankService.getClientInfo(req.user.user_id, apiToken);
   }
 
   @Get('cards')
-  @ApiOperation({ summary: 'Отримати всі збережені картки з бази даних' })
+  @ApiOperation({ summary: 'Список усіх збережених карток' })
   async getCards(@Req() req: RequestWithUser) {
     return this.monobankService.getSavedCards(req.user.user_id);
   }
 
   @Get('cards/:id')
-  @ApiOperation({
-    summary: 'Отримати дані конкретної картки за її внутрішнім ID',
-  })
-  @ApiParam({
-    name: 'id',
-    description: 'Внутрішній ID картки з таблиці mono_cards',
-  })
+  @ApiOperation({ summary: 'Дані однієї картки за ID' })
+  @ApiParam({ name: 'id', type: 'number' })
   async getCard(
     @Req() req: RequestWithUser,
     @Param('id', ParseIntPipe) id: number,
@@ -73,10 +70,16 @@ export class MonobankController {
     return this.monobankService.getSavedCardById(req.user.user_id, id);
   }
 
-  @Post('sync')
+  @Post('setup-accounts')
   @ApiOperation({
-    summary: 'Синхронізувати транзакції для конкретного акаунта',
+    summary: 'Створити Account для кожної картки Mono, якої ще немає в БД',
   })
+  async setupAccounts(@Req() req: RequestWithUser) {
+    return this.monobankService.initializeAccountsFromCards(req.user.user_id);
+  }
+
+  @Post('sync')
+  @ApiOperation({ summary: 'Ручна синхронізація транзакцій для Account' })
   @ApiBody({
     schema: {
       type: 'object',
@@ -93,9 +96,9 @@ export class MonobankController {
   ) {
     const apiToken =
       token || this.configService.get<string>('MONOBANK_API_TOKEN');
-    if (!apiToken) {
+    if (!apiToken)
       throw new HttpException('Token missing', HttpStatus.UNAUTHORIZED);
-    }
+
     return this.monobankService.syncTransactions(
       req.user.user_id,
       accountId,

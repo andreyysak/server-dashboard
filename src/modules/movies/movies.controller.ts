@@ -3,12 +3,19 @@ import {
   Get,
   Post,
   Param,
+  Query,
   UseGuards,
   Req,
   ParseIntPipe,
 } from '@nestjs/common';
 import { MoviesService } from './movies.service';
-import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
+import { MovieParserService } from './external/movie.service'; // Імпортуємо парсер
+import {
+  ApiTags,
+  ApiOperation,
+  ApiBearerAuth,
+  ApiQuery,
+} from '@nestjs/swagger';
 import { AuthGuard } from '@nestjs/passport';
 
 interface RequestWithUser extends Request {
@@ -23,7 +30,12 @@ interface RequestWithUser extends Request {
 @UseGuards(AuthGuard('jwt'))
 @Controller('movies')
 export class MoviesController {
-  constructor(private readonly moviesService: MoviesService) {}
+  constructor(
+    private readonly moviesService: MoviesService,
+    private readonly movieParserService: MovieParserService, // Додаємо парсер у конструктор
+  ) {}
+
+  // --- ЛОКАЛЬНІ СПИСКИ КОРИСТУВАЧА ---
 
   @Get('favorites')
   @ApiOperation({ summary: 'Отримати список улюблених фільмів' })
@@ -74,5 +86,50 @@ export class MoviesController {
   @ApiOperation({ summary: 'Деталі фільму з локальної бази' })
   async getDetails(@Param('tmdbId', ParseIntPipe) tmdbId: number) {
     return this.moviesService.getLocalMovieDetails(tmdbId);
+  }
+
+  // --- ЗОВНІШНІЙ ПОШУК (TMDB) ---
+
+  @Get('search')
+  @ApiOperation({ summary: 'Пошук фільмів за назвою в TMDB' })
+  @ApiQuery({ name: 'query', description: 'Назва фільму' })
+  async search(@Query('query') query: string) {
+    return this.movieParserService.searchByTitle(query);
+  }
+
+  @Get('trending')
+  @ApiOperation({ summary: 'Трендові фільми тижня' })
+  async getTrending() {
+    return this.movieParserService.getTrending();
+  }
+
+  @Get('popular')
+  @ApiOperation({ summary: 'Популярні фільми' })
+  @ApiQuery({ name: 'page', required: false })
+  async getPopular(@Query('page') page?: number) {
+    return this.movieParserService.getPopular(page || 1);
+  }
+
+  @Get('upcoming')
+  @ApiOperation({ summary: 'Очікувані новинки' })
+  async getUpcoming() {
+    return this.movieParserService.getUpcoming();
+  }
+
+  @Get('tmdb-details/:tmdbId')
+  @ApiOperation({
+    summary:
+      'Отримати повні деталі фільму прямо з TMDB (включаючи акторів та відео)',
+  })
+  async getExternalDetails(@Param('tmdbId', ParseIntPipe) tmdbId: number) {
+    return this.movieParserService.getById(tmdbId);
+  }
+
+  @Get('tmdb-credits/:tmdbId')
+  @ApiOperation({
+    summary: 'Отримати тільки список акторів та знімальної групи з TMDB',
+  })
+  async getMovieCredits(@Param('tmdbId', ParseIntPipe) tmdbId: number) {
+    return this.movieParserService.getMovieCredits(tmdbId);
   }
 }
