@@ -1,16 +1,9 @@
-import {
-  ConflictException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Movie } from './entities/movie.entity';
 import { MovieDetails } from './entities/movie-details.entity';
-import { MovieWatchedEntity } from './entities/movie-watched.entity';
-import { ManageMovieDto } from './dto/manage-movie.dto';
-import { MovieParserService } from './external/movie.service';
-import { MovieTypeEnum } from './enums/movie-type.enum';
+import { MovieWatched } from './entities/movie-watched.entity';
 import { MovieFavorite } from './entities/movie-favorites.entity';
 import { MovieWatchLater } from './entities/movie_watch_later.entity';
 
@@ -18,131 +11,142 @@ import { MovieWatchLater } from './entities/movie_watch_later.entity';
 export class MoviesService {
   constructor(
     @InjectRepository(Movie)
-    private readonly movieRepository: Repository<Movie>,
+    private readonly movieRepo: Repository<Movie>,
     @InjectRepository(MovieDetails)
-    private readonly detailsRepository: Repository<MovieDetails>,
+    private readonly detailsRepo: Repository<MovieDetails>,
+    @InjectRepository(MovieWatched)
+    private readonly watchedRepo: Repository<MovieWatched>,
     @InjectRepository(MovieFavorite)
-    private readonly favRepo: Repository<MovieFavorite>,
-    @InjectRepository(MovieWatchedEntity)
-    private readonly watchedRepo: Repository<MovieWatchedEntity>,
+    private readonly favoriteRepo: Repository<MovieFavorite>,
     @InjectRepository(MovieWatchLater)
-    private readonly laterRepo: Repository<MovieWatchLater>,
-    private readonly tmdbService: MovieParserService,
+    private readonly watchLaterRepo: Repository<MovieWatchLater>,
   ) {}
 
-  async addToList(userId: number, list: MovieTypeEnum, dto: ManageMovieDto) {
-    const repo = this.getRepo(list);
-
-    const existsInList = await repo.findOne({
-      where: { user_id: userId, tmdb_id: dto.tmdb_id },
+  /**
+   * Отримати всі переглянуті фільми користувача з інформацією про фільм
+   */
+  async getWatchedMovies(userId: number) {
+    return this.watchedRepo.find({
+      where: { user_id: userId },
+      relations: ['user'],
+      order: { created_at: 'DESC' },
     });
-
-    if (existsInList) {
-      throw new ConflictException('Фільм вже є у цьому списку');
-    }
-
-    await this.cacheMovieFromTmdb(dto.tmdb_id);
-
-    if (list === MovieTypeEnum.WATCHED) {
-      await this.laterRepo.delete({ user_id: userId, tmdb_id: dto.tmdb_id });
-    } else if (list === MovieTypeEnum.WATCH_LATER) {
-      await this.watchedRepo.delete({ user_id: userId, tmdb_id: dto.tmdb_id });
-    }
-
-    const record = repo.create({ user_id: userId, tmdb_id: dto.tmdb_id });
-    return await repo.save(record);
   }
 
-  async getList(userId: number, list: MovieTypeEnum) {
-    const repo = this.getRepo(list);
-    const records = await repo.find({
+  /**
+   * Отримати список улюблених фільмів
+   */
+  async getFavoriteMovies(userId: number) {
+    return this.favoriteRepo.find({
       where: { user_id: userId },
       order: { created_at: 'DESC' },
     });
-
-    const populated = await Promise.all(
-      records.map(async (record) => {
-        const localMovieInfo = await this.movieRepository.findOne({
-          where: { tmdb_id: record.tmdb_id },
-          relations: ['details'],
-        });
-
-        return {
-          id: record.id,
-          user_id: record.user_id,
-          tmdb_id: record.tmdb_id,
-          created_at: record.created_at,
-          movie_data: localMovieInfo,
-        };
-      }),
-    );
-
-    return populated;
   }
 
-  async changeStatus(
-    userId: number,
-    tmdbId: number,
-    MovieTypeEnum: MovieTypeEnum,
-  ) {
-    return this.addToList(userId, MovieTypeEnum, { tmdb_id: tmdbId });
+  /**
+   * Отримати список "Подивитися пізніше"
+   */
+  async getWatchLaterMovies(userId: number) {
+    return this.watchLaterRepo.find({
+      where: { user_id: userId },
+      order: { created_at: 'DESC' },
+    });
   }
 
-  async removeFromList(userId: number, list: MovieTypeEnum, tmdbId: number) {
-    const repo = this.getRepo(list);
-    const result = await repo.delete({ user_id: userId, tmdb_id: tmdbId });
+  /**
+   * Додати або видалити фільм з улюблених (Toggle)
+   */
+  async toggleFavorite(userId: number, tmdbId: number) {
+    const favorite = await this.favoriteRepo.findOne({
+      where: { user_id: userId, tmdb_id: tmdbId },
+    });
 
-    if (result.affected === 0) {
-      throw new NotFoundException('Фільм не знайдено у списку');
+    if (favorite) {
+      await this.favoriteRepo.remove(favorite);
+      return { added: false, message: 'Removed from favorites' };
     }
+
+    const newFavorite = this.favoriteRepo.create({
+      user_id: userId,
+      tmdb_id: tmdbId,
+    });
+
+    await this.favoriteRepo.save(newFavorite);
+    return { added: true, message: 'Added to favorites' };
   }
 
-  private getRepo(list: MovieTypeEnum) {
-    switch (list) {
-      case MovieTypeEnum.FAVORITE:
-        return this.favRepo;
-      case MovieTypeEnum.WATCHED:
-        return this.watchedRepo;
-      case MovieTypeEnum.WATCH_LATER:
-        return this.laterRepo;
+  /**
+   * Додати або видалити фільм з переглянутих
+   */
+  async toggleWatched(userId: number, tmdbId: number) {
+    const watched = await this.watchedRepo.findOne({
+      where: { user_id: userId, tmdb_id: tmdbId },
+    });
+
+    if (watched) {
+      await this.watchedRepo.remove(watched);
+      return { added: false, message: 'Removed from watched' };
     }
+
+    const newWatched = this.watchedRepo.create({
+      user_id: userId,
+      tmdb_id: tmdbId,
+    });
+
+    await this.watchedRepo.save(newWatched);
+    return { added: true, message: 'Marked as watched' };
   }
 
-  private async cacheMovieFromTmdb(tmdbId: number): Promise<void> {
-    const existingMovie = await this.movieRepository.findOne({
+  /**
+   * Додати або видалити фільм зі списку "Подивитися пізніше"
+   */
+  async toggleWatchLater(userId: number, tmdbId: number) {
+    const later = await this.watchLaterRepo.findOne({
+      where: { user_id: userId, tmdb_id: tmdbId },
+    });
+
+    if (later) {
+      await this.watchLaterRepo.remove(later);
+      return { added: false, message: 'Removed from watch later' };
+    }
+
+    const newLater = this.watchLaterRepo.create({
+      user_id: userId,
+      tmdb_id: tmdbId,
+    });
+
+    await this.watchLaterRepo.save(newLater);
+    return { added: true, message: 'Added to watch later' };
+  }
+
+  /**
+   * Отримати деталі фільму з локального кешу
+   */
+  async getLocalMovieDetails(tmdbId: number) {
+    const movie = await this.movieRepo.findOne({
       where: { tmdb_id: tmdbId },
+      relations: ['details'],
     });
 
-    if (existingMovie) {
-      return;
+    if (!movie) {
+      throw new HttpException(
+        'Movie not found in local database',
+        HttpStatus.NOT_FOUND,
+      );
     }
 
-    const tmdbData = await this.tmdbService.getById(tmdbId);
+    return movie;
+  }
 
-    if (!tmdbData) {
-      throw new NotFoundException('Фільм не знайдено в базі TMDB');
-    }
-
-    const details = this.detailsRepository.create({
-      tmdb_id: tmdbData.id,
-      budget: tmdbData.budget,
-      revenue: tmdbData.revenue,
-      runtime: tmdbData.runtime,
-      cast: tmdbData.credits?.cast?.slice(0, 10) || [],
-      production_companies: tmdbData.production_companies || [],
-    });
-
-    await this.detailsRepository.save(details);
-
-    const movie = this.movieRepository.create({
-      tmdb_id: tmdbData.id,
-      title: tmdbData.title || tmdbData.original_title,
-      poster_path: tmdbData.poster_path,
-      release_date: tmdbData.release_date,
-      overview: tmdbData.overview,
-      details: details,
-    });
-
-    await this.movieRepository.save(movie);
+  /**
+   * Видалити всі дані користувача (корисно при видаленні аккаунту)
+   */
+  async clearUserData(userId: number) {
+    await Promise.all([
+      this.favoriteRepo.delete({ user_id: userId }),
+      this.watchedRepo.delete({ user_id: userId }),
+      this.watchLaterRepo.delete({ user_id: userId }),
+    ]);
+    return { success: true };
   }
 }

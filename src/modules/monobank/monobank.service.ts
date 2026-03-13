@@ -3,9 +3,11 @@ import { HttpService } from '@nestjs/axios';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { firstValueFrom } from 'rxjs';
+import { ConfigService } from '@nestjs/config';
 import { Account } from '../account/entities/account.entity';
 import { Transaction } from '../transaction/entities/transaction.entity';
 import { Category } from '../category/entities/category.entity';
+import { MonoCard } from './entities/mono-card.entity';
 
 interface IMonoStatementItem {
   id: string;
@@ -22,23 +24,37 @@ export class MonobankService {
 
   constructor(
     private readonly httpService: HttpService,
+    private readonly configService: ConfigService,
     @InjectRepository(Account)
     private readonly accountRepo: Repository<Account>,
     @InjectRepository(Transaction)
     private readonly transactionRepo: Repository<Transaction>,
     @InjectRepository(Category)
     private readonly categoryRepo: Repository<Category>,
+    @InjectRepository(MonoCard)
+    private readonly cardRepo: Repository<MonoCard>,
   ) {}
 
-  async getClientInfo(token: string) {
+  async getClientInfo(userId: number, token: string) {
     try {
       const response = await firstValueFrom(
         this.httpService.get(`${this.MONO_API_URL}/personal/client-info`, {
           headers: { 'X-Token': token },
         }),
       );
-      return response.data;
-    } catch (error) {
+
+      const data = response.data;
+
+      for (const acc of data.accounts) {
+        await this.upsertCard(userId, acc, data.name);
+      }
+
+      for (const jar of data.jars) {
+        await this.upsertCard(userId, jar, jar.title, true);
+      }
+
+      return data;
+    } catch (error: any) {
       throw new HttpException(
         error.response?.data?.errorDescription || 'Mono API Error',
         HttpStatus.BAD_GATEWAY,
@@ -46,30 +62,28 @@ export class MonobankService {
     }
   }
 
-  async syncTransactions(userId: number, token: string, accountId: number) {
+  async syncTransactions(userId: number, accountId: number, token: string) {
     const account = await this.accountRepo.findOne({
       where: { account_id: accountId, user_id: userId },
     });
 
     if (!account || !account.mono_account_id) {
-      throw new HttpException(
-        'Account not found or mono_account_id missing',
-        HttpStatus.NOT_FOUND,
-      );
+      throw new HttpException('Account mapping missing', HttpStatus.NOT_FOUND);
     }
 
     const now = Math.floor(Date.now() / 1000);
     const from = now - 30 * 24 * 60 * 60;
 
     try {
-      const { data } = await firstValueFrom(
+      const response = await firstValueFrom(
         this.httpService.get<IMonoStatementItem[]>(
           `${this.MONO_API_URL}/personal/statement/${account.mono_account_id}/${from}/${now}`,
           { headers: { 'X-Token': token } },
         ),
       );
 
-      let importedCount = 0;
+      const data = response.data;
+      let imported = 0;
 
       for (const item of data) {
         const exists = await this.transactionRepo.findOne({
@@ -90,7 +104,7 @@ export class MonobankService {
           });
 
           await this.transactionRepo.save(transaction);
-          importedCount++;
+          imported++;
         }
       }
 
@@ -99,23 +113,60 @@ export class MonobankService {
         await this.accountRepo.save(account);
       }
 
-      return {
-        success: true,
-        imported: importedCount,
-        currentBalance: account.balance,
-      };
-    } catch (error) {
-      if (error.response?.status === 429) {
-        throw new HttpException(
-          'Too many requests to Monobank API. Wait 60s.',
-          HttpStatus.TOO_MANY_REQUESTS,
-        );
-      }
-      throw new HttpException(
-        'Failed to sync transactions',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      return { imported, currentBalance: account.balance };
+    } catch (error: any) {
+      throw new HttpException('Sync failed', HttpStatus.INTERNAL_SERVER_ERROR);
     }
+  }
+
+  // --- НОВІ ФУНКЦІЇ ---
+
+  async getSavedCards(userId: number): Promise<MonoCard[]> {
+    return await this.cardRepo.find({
+      where: { user_id: userId },
+      order: { balance: 'DESC' },
+    });
+  }
+
+  async getSavedCardById(userId: number, cardId: number): Promise<MonoCard> {
+    const card = await this.cardRepo.findOne({
+      where: { id: cardId, user_id: userId },
+    });
+
+    if (!card) {
+      throw new HttpException('Card not found', HttpStatus.NOT_FOUND);
+    }
+
+    return card;
+  }
+
+  // --------------------
+
+  private async upsertCard(
+    userId: number,
+    monoData: any,
+    ownerName: string,
+    isJar = false,
+  ) {
+    let card = await this.cardRepo.findOne({
+      where: { mono_account_id: monoData.id, user_id: userId },
+    });
+
+    if (!card) {
+      card = this.cardRepo.create({
+        mono_account_id: monoData.id,
+        user_id: userId,
+      });
+    }
+
+    card.name = ownerName;
+    card.balance = monoData.balance / 100;
+    card.currency_code = monoData.currencyCode;
+    card.type = isJar ? 'jar' : monoData.type;
+    card.masked_pan = monoData.maskedPan || null;
+    card.iban = monoData.iban || null;
+
+    await this.cardRepo.save(card);
   }
 
   private async mapMccToCategoryId(
@@ -123,7 +174,6 @@ export class MonobankService {
     mcc: number,
   ): Promise<number> {
     let categoryName = 'Інше';
-
     const mccMap: Record<string, number[]> = {
       Продукти: [5411, 5422, 5441, 5451, 5462, 5499],
       Розваги: [5812, 5813, 5814, 7832, 7922, 7991, 7996],

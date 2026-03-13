@@ -3,7 +3,10 @@ import {
   CreateDateColumn,
   Entity,
   PrimaryGeneratedColumn,
+  ManyToOne,
+  JoinColumn,
 } from 'typeorm';
+import { User } from '../../user/entities/user.entity';
 
 @Entity('movie_watch_later')
 export class MovieWatchLater {
@@ -18,4 +21,10 @@ export class MovieWatchLater {
 
   @CreateDateColumn()
   created_at: Date;
+
+  @ManyToOne(() => User, (user) => user.movie_watch_later, {
+    onDelete: 'CASCADE',
+  })
+  @JoinColumn({ name: 'user_id' })
+  user: User;
 }

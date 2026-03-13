@@ -16,6 +16,10 @@ import { Transaction } from '../../transaction/entities/transaction.entity';
 import { Maintenance } from '../../maintenance/entities/maintenance.entity';
 import { Series } from '../../series/entities/series.entity';
 import { Workout } from '../../workout/entities/workout.entity';
+import { MonoCard } from '../../monobank/entities/mono-card.entity';
+import { MovieFavorite } from '../../movies/entities/movie-favorites.entity';
+import { MovieWatched } from '../../movies/entities/movie-watched.entity';
+import { MovieWatchLater } from '../../movies/entities/movie_watch_later.entity';
 
 @Entity('users')
 export class User {
@@ -85,9 +89,21 @@ export class User {
   @OneToMany(() => Transaction, (transaction) => transaction.user)
   transactions: Transaction[];
 
-  // @OneToMany(() => Movie, (movie) => movie.user)
-  // movies: Movie[];
+  // --- MONOBANK ---
+  @OneToMany(() => MonoCard, (card) => card.user)
+  mono_cards: MonoCard[];
 
+  // --- MOVIES ---
+  @OneToMany(() => MovieFavorite, (favorite) => favorite.user)
+  movie_favorites: MovieFavorite[];
+
+  @OneToMany(() => MovieWatched, (watched) => watched.user)
+  movie_watched: MovieWatched[];
+
+  @OneToMany(() => MovieWatchLater, (later) => later.user)
+  movie_watch_later: MovieWatchLater[];
+
+  // --- OTHER ---
   @OneToMany(() => Series, (seria) => seria.user)
   series: Series[];
 

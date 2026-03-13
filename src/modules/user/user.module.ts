@@ -1,12 +1,15 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
+import { TypeOrmModule } from '@nestjs/typeorm';
 import { UserService } from './user.service';
 import { UserController } from './user.controller';
-import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
-import { Account } from '../account/entities/account.entity';
+import { MoviesModule } from '../movies/movies.module'; // Імпорт модуля фільмів
 
 @Module({
-  imports: [TypeOrmModule.forFeature([User])],
+  imports: [
+    TypeOrmModule.forFeature([User]),
+    forwardRef(() => MoviesModule), // Додаємо forwardRef
+  ],
   controllers: [UserController],
   providers: [UserService],
   exports: [UserService],

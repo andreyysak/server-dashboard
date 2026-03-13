@@ -1,30 +1,29 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
-import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Not, IsNull } from 'typeorm';
 import { Account } from '../account/entities/account.entity';
 import { MonobankService } from './monobank.service';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class MonobankCronService {
   private readonly logger = new Logger(MonobankCronService.name);
 
   constructor(
-    private readonly configService: ConfigService,
-    private readonly monobankService: MonobankService,
     @InjectRepository(Account)
     private readonly accountRepo: Repository<Account>,
+    private readonly monobankService: MonobankService,
+    private readonly configService: ConfigService,
   ) {}
 
-  @Cron('*/10 * * * *') // Кожні 10 хвилин
-  async handleSync() {
-    this.logger.debug('Запуск автоматичної синхронізації Monobank...');
+  @Cron('*/10 * * * *')
+  async handleCron() {
+    this.logger.debug('Starting Monobank Auto-Sync...');
 
     const token = this.configService.get<string>('MONOBANK_API_TOKEN');
-
     if (!token) {
-      this.logger.error('MONOBANK_API_TOKEN не знайдено в .env!');
+      this.logger.error('Sync failed: MONOBANK_API_TOKEN is missing');
       return;
     }
 
@@ -32,29 +31,19 @@ export class MonobankCronService {
       where: { mono_account_id: Not(IsNull()) },
     });
 
-    if (accounts.length === 0) {
-      this.logger.warn(
-        'Не знайдено жодного рахунку з прив’язаним Monobank ID.',
-      );
-      return;
-    }
-
-    for (const account of accounts) {
+    for (const acc of accounts) {
       try {
-        this.logger.log(`Синхронізація для рахунку: ${account.account_id}`);
-
-        const result = await this.monobankService.syncTransactions(
-          account.user_id,
+        await this.monobankService.syncTransactions(
+          acc.user_id,
+          acc.account_id,
           token,
-          account.account_id,
         );
-
         this.logger.log(
-          `Успішно! Імпортовано: ${result.imported}. Баланс: ${result.currentBalance} грн.`,
+          `Synced account ${acc.account_id} for user ${acc.user_id}`,
         );
-      } catch (error) {
+      } catch (e) {
         this.logger.error(
-          `Помилка під час синхронізації акаунта ${account.account_id}: ${error.message}`,
+          `Sync failed for account ${acc.account_id}: ${e.message}`,
         );
       }
     }
