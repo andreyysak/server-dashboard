@@ -16,6 +16,10 @@ export class Transaction {
   @PrimaryGeneratedColumn()
   transaction_id: number;
 
+  @Index({ unique: true })
+  @Column({ nullable: true })
+  mono_id: string;
+
   @Index()
   @Column()
   user_id: number;

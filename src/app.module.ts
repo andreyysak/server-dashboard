@@ -19,6 +19,7 @@ import { WorkoutsModule } from './modules/workout/workout.module';
 import { MonobankModule } from './modules/monobank/monobank.module';
 import { WeatherModule } from './modules/weather/weather.module';
 import { ExportModule } from './export/export.module';
+import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
   imports: [
@@ -56,6 +57,7 @@ import { ExportModule } from './export/export.module';
     MonobankModule,
     WeatherModule,
     ExportModule,
+    ScheduleModule.forRoot(),
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -7,6 +7,15 @@ import { Account } from '../account/entities/account.entity';
 import { Transaction } from '../transaction/entities/transaction.entity';
 import { Category } from '../category/entities/category.entity';
 
+interface IMonoStatementItem {
+  id: string;
+  time: number;
+  description: string;
+  mcc: number;
+  amount: number;
+  balance: number;
+}
+
 @Injectable()
 export class MonobankService {
   private readonly MONO_API_URL = 'https://api.monobank.ua';
@@ -50,11 +59,11 @@ export class MonobankService {
     }
 
     const now = Math.floor(Date.now() / 1000);
-    const from = now - 30 * 24 * 60 * 60; // 30 днів
+    const from = now - 30 * 24 * 60 * 60;
 
     try {
       const { data } = await firstValueFrom(
-        this.httpService.get(
+        this.httpService.get<IMonoStatementItem[]>(
           `${this.MONO_API_URL}/personal/statement/${account.mono_account_id}/${from}/${now}`,
           { headers: { 'X-Token': token } },
         ),
@@ -63,15 +72,8 @@ export class MonobankService {
       let importedCount = 0;
 
       for (const item of data) {
-        const transactionDate = new Date(item.time * 1000);
-
         const exists = await this.transactionRepo.findOne({
-          where: {
-            user_id: userId,
-            account_id: accountId,
-            created_at: transactionDate,
-            amount: item.amount / 100,
-          },
+          where: { mono_id: item.id },
         });
 
         if (!exists) {
@@ -83,7 +85,8 @@ export class MonobankService {
             category_id: categoryId,
             amount: item.amount / 100,
             description: item.description || 'No description',
-            created_at: transactionDate,
+            created_at: new Date(item.time * 1000),
+            mono_id: item.id,
           });
 
           await this.transactionRepo.save(transaction);
