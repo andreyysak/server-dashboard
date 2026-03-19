@@ -16,10 +16,19 @@ export class AuthController {
     const user = await this.authService.validate(req.user);
     const jwt = this.authService.generateJwt(user);
 
-    const frontendUrl =
-      process.env.FRONTEND_URL || 'http://localhost:3000/login-success';
+    const userAgent = req.headers['user-agent'] || '';
+    const isMobile = /mobile|android|iphone|ipad/i.test(userAgent);
 
-    const redirectUrl = `${frontendUrl}?token=${jwt}`;
+    let redirectUrl: string;
+
+    if (isMobile) {
+      const mobileUrl = process.env.MOBILE_URL || 'moonwatch://login-success';
+      redirectUrl = `${mobileUrl}?token=${jwt}`;
+    } else {
+      const frontendUrl =
+        process.env.FRONTEND_URL || 'http://localhost:3000/login-success';
+      redirectUrl = `${frontendUrl}?token=${jwt}`;
+    }
 
     return res.redirect(redirectUrl);
   }
