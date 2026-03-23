@@ -23,6 +23,9 @@ export class Maintenance {
   @Column()
   car_id: number;
 
+  @Column({ type: 'float', default: 0 })
+  cost: number;
+
   @Column()
   date: Date;
 

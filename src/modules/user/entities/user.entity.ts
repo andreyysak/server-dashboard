@@ -2,8 +2,10 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  Index,
   OneToMany,
   PrimaryGeneratedColumn,
+  UpdateDateColumn,
 } from 'typeorm';
 import { Exclude } from 'class-transformer';
 import { UserRole } from '../enums/user-role.enum';
@@ -14,23 +16,27 @@ import { Account } from '../../account/entities/account.entity';
 import { Category } from '../../category/entities/category.entity';
 import { Transaction } from '../../transaction/entities/transaction.entity';
 import { Maintenance } from '../../maintenance/entities/maintenance.entity';
-import { Series } from '../../series/entities/series.entity';
 import { Workout } from '../../workout/entities/workout.entity';
-import { MonoCard } from '../../monobank/entities/mono-card.entity';
+import { MonoCard } from '../../../integrations/monobank/entities/mono-card.entity';
 import { MovieFavorite } from '../../movies/entities/movie-favorites.entity';
 import { MovieWatched } from '../../movies/entities/movie-watched.entity';
 import { MovieWatchLater } from '../../movies/entities/movie_watch_later.entity';
+import { SeriesFavorite } from '../../series/entities/series-favorites.entity';
+import { SeriesWatched } from '../../series/entities/series-watched.entity';
+import { SeriesWatchLater } from '../../series/entities/series-watch-later.entity';
 
 @Entity('users')
 export class User {
   @PrimaryGeneratedColumn()
   user_id: number;
 
+  @Index({ unique: true })
   @Column({ unique: true, nullable: false })
   email: string;
 
   @Exclude()
-  @Column({ nullable: true })
+  @Index({ unique: true, where: '("googleId" IS NOT NULL)' })
+  @Column({ unique: true, nullable: true })
   googleId: string;
 
   @Column({ nullable: true })
@@ -46,6 +52,7 @@ export class User {
   telegram_username: string;
 
   @Exclude()
+  @Index({ unique: true, where: '("telegram_user_id" IS NOT NULL)' })
   @Column({ unique: true, nullable: true })
   telegram_user_id: string;
 
@@ -55,6 +62,7 @@ export class User {
   @Column({ nullable: true })
   city: string;
 
+  @Index()
   @Column({
     type: 'enum',
     enum: UserRole,
@@ -67,6 +75,9 @@ export class User {
 
   @CreateDateColumn()
   created_at: Date;
+
+  @UpdateDateColumn()
+  updated_at: Date;
 
   @OneToMany(() => Trip, (trip) => trip.user)
   trips: Trip[];
@@ -103,10 +114,17 @@ export class User {
   @OneToMany(() => MovieWatchLater, (later) => later.user)
   movie_watch_later: MovieWatchLater[];
 
-  // --- OTHER ---
-  @OneToMany(() => Series, (seria) => seria.user)
-  series: Series[];
+  // --- SERIES ---
+  @OneToMany(() => SeriesFavorite, (favorite) => favorite.user)
+  series_favorites: SeriesFavorite[];
 
+  @OneToMany(() => SeriesWatched, (watched) => watched.user)
+  series_watched: SeriesWatched[];
+
+  @OneToMany(() => SeriesWatchLater, (later) => later.user)
+  series_watch_later: SeriesWatchLater[];
+
+  // --- OTHER ---
   @OneToMany(() => Workout, (workout) => workout.user)
   workouts: Workout[];
 }

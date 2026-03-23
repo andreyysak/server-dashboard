@@ -1,7 +1,7 @@
 import { Column, Entity, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { Series } from './series.entity';
 
-@Entity('series_details')
+@Entity('tv_series_details')
 export class SeriesDetails {
   @PrimaryGeneratedColumn()
   id: number;
@@ -20,6 +20,9 @@ export class SeriesDetails {
 
   @Column({ type: 'jsonb', nullable: true })
   cast: { name: string; character: string; profile_path: string | null }[];
+
+  @Column({ type: 'jsonb', nullable: true })
+  videos: { key: string; name: string; type: string }[];
 
   @Column({ type: 'jsonb', nullable: true })
   production_companies: { name: string; logo_path: string | null }[];

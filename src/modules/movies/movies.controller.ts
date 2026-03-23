@@ -93,27 +93,31 @@ export class MoviesController {
   @Get('search')
   @ApiOperation({ summary: 'Пошук фільмів за назвою в TMDB' })
   @ApiQuery({ name: 'query', description: 'Назва фільму' })
-  async search(@Query('query') query: string) {
-    return this.movieParserService.searchByTitle(query);
+  @ApiQuery({ name: 'lang', required: false, enum: ['en', 'ua'], description: 'Language (default: en)' })
+  async search(@Query('query') query: string, @Query('lang') lang?: string) {
+    return this.movieParserService.searchByTitle(query, lang);
   }
 
   @Get('trending')
   @ApiOperation({ summary: 'Трендові фільми тижня' })
-  async getTrending() {
-    return this.movieParserService.getTrending();
+  @ApiQuery({ name: 'lang', required: false, enum: ['en', 'ua'], description: 'Language (default: en)' })
+  async getTrending(@Query('lang') lang?: string) {
+    return this.movieParserService.getTrending('week', lang);
   }
 
   @Get('popular')
   @ApiOperation({ summary: 'Популярні фільми' })
   @ApiQuery({ name: 'page', required: false })
-  async getPopular(@Query('page') page?: number) {
-    return this.movieParserService.getPopular(page || 1);
+  @ApiQuery({ name: 'lang', required: false, enum: ['en', 'ua'], description: 'Language (default: en)' })
+  async getPopular(@Query('page') page?: number, @Query('lang') lang?: string) {
+    return this.movieParserService.getPopular(page || 1, lang);
   }
 
   @Get('upcoming')
   @ApiOperation({ summary: 'Очікувані новинки' })
-  async getUpcoming() {
-    return this.movieParserService.getUpcoming();
+  @ApiQuery({ name: 'lang', required: false, enum: ['en', 'ua'], description: 'Language (default: en)' })
+  async getUpcoming(@Query('lang') lang?: string) {
+    return this.movieParserService.getUpcoming(1, lang);
   }
 
   @Get('tmdb-details/:tmdbId')
@@ -121,15 +125,17 @@ export class MoviesController {
     summary:
       'Отримати повні деталі фільму прямо з TMDB (включаючи акторів та відео)',
   })
-  async getExternalDetails(@Param('tmdbId', ParseIntPipe) tmdbId: number) {
-    return this.movieParserService.getById(tmdbId);
+  @ApiQuery({ name: 'lang', required: false, enum: ['en', 'ua'], description: 'Language (default: en)' })
+  async getExternalDetails(@Param('tmdbId', ParseIntPipe) tmdbId: number, @Query('lang') lang?: string) {
+    return this.movieParserService.getById(tmdbId, lang);
   }
 
   @Get('tmdb-credits/:tmdbId')
   @ApiOperation({
     summary: 'Отримати тільки список акторів та знімальної групи з TMDB',
   })
-  async getMovieCredits(@Param('tmdbId', ParseIntPipe) tmdbId: number) {
-    return this.movieParserService.getMovieCredits(tmdbId);
+  @ApiQuery({ name: 'lang', required: false, enum: ['en', 'ua'], description: 'Language (default: en)' })
+  async getMovieCredits(@Param('tmdbId', ParseIntPipe) tmdbId: number, @Query('lang') lang?: string) {
+    return this.movieParserService.getMovieCredits(tmdbId, lang);
   }
 }

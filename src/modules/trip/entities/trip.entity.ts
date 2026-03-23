@@ -20,6 +20,7 @@ export class Trip {
   @Column()
   user_id: number;
 
+  @Index()
   @Column()
   car_id: number;
 
@@ -39,7 +40,7 @@ export class Trip {
   updated_at: Date;
 
   @ManyToOne(() => User, (user) => user.trips, { onDelete: 'CASCADE' })
-  @JoinColumn({ name: 'userId' })
+  @JoinColumn({ name: 'user_id' })
   user: User;
 
   @ManyToOne(() => Car, (car) => car.trips, { onDelete: 'CASCADE' })

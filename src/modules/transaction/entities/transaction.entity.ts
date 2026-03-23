@@ -6,6 +6,7 @@ import {
   PrimaryGeneratedColumn,
   ManyToOne,
   JoinColumn,
+  UpdateDateColumn,
 } from 'typeorm';
 import { User } from '../../user/entities/user.entity';
 import { Account } from '../../account/entities/account.entity';
@@ -40,6 +41,9 @@ export class Transaction {
 
   @CreateDateColumn()
   created_at: Date;
+
+  @UpdateDateColumn()
+  updated_at: Date;
 
   @ManyToOne(() => User, (user) => user.transactions, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'user_id' })

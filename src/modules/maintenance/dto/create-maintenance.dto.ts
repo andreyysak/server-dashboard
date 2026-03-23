@@ -33,4 +33,12 @@ export class CreateMaintenanceDto {
   @IsNumber()
   @IsNotEmpty()
   odometer: number;
+
+  @ApiProperty({
+    example: 3500,
+    description: 'Вартість обслуговування (грн)',
+  })
+  @IsNumber()
+  @IsNotEmpty()
+  cost: number;
 }

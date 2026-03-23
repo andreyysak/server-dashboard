@@ -7,6 +7,7 @@ import {
   JoinColumn,
   CreateDateColumn,
   UpdateDateColumn,
+  Index,
 } from 'typeorm';
 import { User } from '../../user/entities/user.entity';
 import { Trip } from '../../trip/entities/trip.entity';
@@ -19,15 +20,19 @@ export class Car {
   @PrimaryGeneratedColumn()
   car_id: number;
 
+  @Index()
   @Column()
   brand: string;
 
+  @Index()
   @Column()
   model: string;
 
+  @Index({ unique: true })
   @Column({ unique: true })
   vin_code: string;
 
+  @Index()
   @Column({ nullable: true })
   license_plate: string;
 
@@ -52,6 +57,7 @@ export class Car {
   @Column({ type: 'jsonb', nullable: true })
   features: any;
 
+  @Index()
   @Column()
   user_id: number;
 
