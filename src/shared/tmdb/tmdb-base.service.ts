@@ -47,15 +47,15 @@ export class TmdbBaseService {
     return this.fetchFromTmdb(endpoint, { query, lang });
   }
 
-  async getTrending(endpoint: string, timeWindow: 'day' | 'week' = 'week', lang?: string) {
+  async fetchTrending(endpoint: string, timeWindow: 'day' | 'week' = 'week', lang?: string) {
     return this.fetchFromTmdb(`${endpoint}/${timeWindow}`, { lang });
   }
 
-  async getPopular(endpoint: string, page: number = 1, lang?: string) {
+  async fetchPopular(endpoint: string, page: number = 1, lang?: string) {
     return this.fetchFromTmdb(endpoint, { page, lang });
   }
 
-  async getById(endpoint: string, id: number, appendToResponse: string = '', lang?: string) {
+  async fetchById(endpoint: string, id: number, appendToResponse: string = '', lang?: string) {
     return this.fetchFromTmdb(`${endpoint}/${id}`, {
       append_to_response: appendToResponse,
       lang,

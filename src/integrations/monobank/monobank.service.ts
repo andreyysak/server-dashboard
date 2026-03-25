@@ -2,7 +2,7 @@ import { Injectable, HttpException, HttpStatus, Logger } from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { firstValueFrom, lastValueFrom } from 'rxjs';
+import { lastValueFrom } from 'rxjs';
 import { catchError, retry } from 'rxjs/operators';
 import { ConfigService } from '@nestjs/config';
 import { Account } from '../../modules/account/entities/account.entity';
@@ -319,15 +319,17 @@ export class MonobankService {
       }
     }
 
-    const category = await this.categoryRepo.findOne({
+    let category = await this.categoryRepo.findOne({
       where: { name: categoryName, user_id: userId },
     });
 
     if (!category) {
-      const defaultCategory = await this.categoryRepo.findOne({
-        where: { user_id: userId },
+      category = this.categoryRepo.create({
+        user_id: userId,
+        name: categoryName,
+        type: 'expense',
       });
-      return defaultCategory ? defaultCategory.category_id : 1;
+      await this.categoryRepo.save(category);
     }
 
     return category.category_id;

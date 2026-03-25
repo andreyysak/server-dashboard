@@ -72,7 +72,7 @@ export class AnalysisService {
     const cost = parseFloat(totalCost) || 0;
 
     // Calculate consumption if trip data available
-    let avgConsumption = null;
+    let avgConsumption: number | null = null;
     let totalKm = 0;
 
     if (carId) {

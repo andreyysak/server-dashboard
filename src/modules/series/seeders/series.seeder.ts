@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Series } from '../entities/series.entity';
 import { SeriesDetails } from '../entities/series-details.entity';
+import { SeriesWatched } from '../entities/series-watched.entity';
 import { SeriesStatus } from '../enums/series-status.enum';
 
 @Injectable()
@@ -12,6 +13,8 @@ export class SeriesSeeder {
     private readonly seriesRepo: Repository<Series>,
     @InjectRepository(SeriesDetails)
     private readonly detailsRepo: Repository<SeriesDetails>,
+    @InjectRepository(SeriesWatched)
+    private readonly watchedRepo: Repository<SeriesWatched>,
   ) {}
 
   async seed(userId: number = 1) {
@@ -372,15 +375,32 @@ export class SeriesSeeder {
       }
 
       const seriesExists = await this.seriesRepo.findOne({
-        where: { tmdb_id: data.tmdb_id, user_id: userId },
+        where: { tmdb_id: data.tmdb_id },
       });
       if (!seriesExists) {
         const series = this.seriesRepo.create({
-          ...data,
-          user_id: userId,
+          tmdb_id: data.tmdb_id,
+          title: data.title,
+          poster_path: data.poster_path,
+          first_air_date: data.first_air_date,
           details: details,
         });
         await this.seriesRepo.save(series);
+      }
+
+      const watchedExists = await this.watchedRepo.findOne({
+        where: { tmdb_id: data.tmdb_id, user_id: userId },
+      });
+      if (!watchedExists) {
+        const watched = this.watchedRepo.create({
+          user_id: userId,
+          tmdb_id: data.tmdb_id,
+          status: data.status,
+          current_season: data.current_season,
+          current_episode: data.current_episode,
+          user_rating: data.user_rating,
+        });
+        await this.watchedRepo.save(watched);
       }
     }
     return { message: 'Seed for series completed successfully' };

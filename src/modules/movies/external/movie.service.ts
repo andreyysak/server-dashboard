@@ -13,22 +13,19 @@ export class MovieParserService extends TmdbBaseService {
   }
 
   async searchByTitle(query: string, lang?: string) {
-    return this.fetchFromTmdb('/search/movie', { query, lang });
+    return this.search('/search/movie', query, lang);
   }
 
   async getById(tmdbId: number, lang?: string) {
-    return this.fetchFromTmdb(`/movie/${tmdbId}`, {
-      append_to_response: 'credits,videos',
-      lang,
-    });
+    return this.fetchById('/movie', tmdbId, 'credits,videos', lang);
   }
 
   async getTrending(timeWindow: 'day' | 'week' = 'week', lang?: string) {
-    return this.fetchFromTmdb(`/trending/movie/${timeWindow}`, { lang });
+    return this.fetchTrending('/trending/movie', timeWindow, lang);
   }
 
   async getPopular(page: number = 1, lang?: string) {
-    return this.fetchFromTmdb('/movie/popular', { page, lang });
+    return this.fetchPopular('/movie/popular', page, lang);
   }
 
   async getUpcoming(months: number = 1, lang?: string) {

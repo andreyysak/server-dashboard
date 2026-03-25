@@ -17,11 +17,11 @@ export class Trip {
   trip_id: number;
 
   @Index()
-  @Column()
+  @Column({ name: 'user_id' })
   user_id: number;
 
   @Index()
-  @Column()
+  @Column({ name: 'car_id' })
   car_id: number;
 
   @Column({ type: 'float' })
@@ -40,10 +40,10 @@ export class Trip {
   updated_at: Date;
 
   @ManyToOne(() => User, (user) => user.trips, { onDelete: 'CASCADE' })
-  @JoinColumn({ name: 'user_id', referencedColumnName: 'user_id' })
+  @JoinColumn({ name: 'user_id' })
   user: User;
 
   @ManyToOne(() => Car, (car) => car.trips, { onDelete: 'CASCADE' })
-  @JoinColumn({ name: 'car_id', referencedColumnName: 'car_id' })
+  @JoinColumn({ name: 'car_id' })
   car: Car;
 }
