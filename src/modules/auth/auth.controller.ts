@@ -26,7 +26,7 @@ export class AuthController {
       redirectUrl = `${mobileUrl}?token=${jwt}`;
     } else {
       const frontendUrl =
-        process.env.FRONTEND_URL || 'http://localhost:3000/login-success';
+        process.env.FRONTEND_URL || 'http://localhost:5187/login-success';
       redirectUrl = `${frontendUrl}?token=${jwt}`;
     }
 
