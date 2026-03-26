@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { Strategy, VerifyCallback } from 'passport-google-oauth20';
+import { Request } from 'express';
 
 @Injectable()
 export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
@@ -11,6 +12,17 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
       callbackURL: process.env.GOOGLE_CALLBACK_URL!,
       scope: ['email', 'profile'],
     });
+  }
+
+  // Overriding standard authenticate to capture the redirect_uri from the query
+  // and pass it to Google via the 'state' parameter.
+  authenticate(req: Request, options: any) {
+    const redirectUri = req.query.redirect_uri as string;
+    if (redirectUri) {
+      const state = Buffer.from(JSON.stringify({ redirect_uri: redirectUri })).toString('base64');
+      options.state = state;
+    }
+    super.authenticate(req, options);
   }
 
   async validate(

@@ -6,8 +6,9 @@ import {
   ConsoleLogger,
   ValidationPipe,
 } from '@nestjs/common';
-
-declare const module: any;
+import { HttpExceptionFilter } from './common/filters/http-exception.filter';
+import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
+import { TransformInterceptor } from './common/interceptors/transform.interceptor';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
@@ -16,7 +17,7 @@ async function bootstrap() {
       logLevels: ['log', 'error', 'debug', 'warn', 'fatal', 'verbose'],
       colors: true,
       sorted: true,
-      json: true,
+      json: false, // Changed for better readability in dev
       compact: false,
     }),
   });
@@ -33,30 +34,37 @@ async function bootstrap() {
     allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
   });
 
-  app.useGlobalInterceptors(new ClassSerializerInterceptor(app.get(Reflector)));
+  // Global Guards, Interceptors, Filters, Pipes
+  app.useGlobalFilters(new HttpExceptionFilter());
+  app.useGlobalInterceptors(
+    new LoggingInterceptor(),
+    new TransformInterceptor(),
+    new ClassSerializerInterceptor(app.get(Reflector)),
+  );
 
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
       forbidNonWhitelisted: true,
       transform: true,
+      errorHttpStatusCode: 422, // Set to 422 for validation errors
     }),
   );
 
+  // Swagger Configuration
   const config = new DocumentBuilder()
-    .setTitle('Dashboard')
-    .setDescription('The dashboard API description')
+    .setTitle('Dashboard API')
+    .setDescription('The dashboard API description and documentation')
     .setVersion('1.0')
-    .addTag('dashboard')
+    .addTag('Dashboard')
+    .addBearerAuth() // Ensure documentation includes JWT auth
     .build();
-  const documentFactory = () => SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api', app, documentFactory);
+
+  const document = SwaggerModule.createDocument(app, config);
+  SwaggerModule.setup('api', app, document);
 
   await app.listen(process.env.PORT ?? 3000);
 
-  if (module.hot) {
-    module.hot.accept();
-    module.hot.dispose(() => app.close());
-  }
+  // Note: module.hot is usually handled by dev server
 }
 bootstrap();

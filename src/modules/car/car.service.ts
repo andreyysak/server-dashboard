@@ -1,5 +1,5 @@
 import {
-  ForbiddenException,
+  ConflictException,
   Injectable,
   InternalServerErrorException,
   NotFoundException,
@@ -17,6 +17,18 @@ export class CarService {
     private readonly carRepository: Repository<Car>,
   ) {}
 
+  async validateCarOwnership(userId: number, carId: number): Promise<Car> {
+    const car = await this.carRepository.findOne({
+      where: { car_id: carId, user_id: userId },
+    });
+
+    if (!car) {
+      throw new NotFoundException(`Car with ID ${carId} not found or access denied`);
+    }
+
+    return car;
+  }
+
   async create(userId: number, createCarDto: CreateCarDto): Promise<Car> {
     try {
       const car = this.carRepository.create({
@@ -27,7 +39,7 @@ export class CarService {
       return await this.carRepository.save(car);
     } catch (error) {
       if (error.code === '23505') {
-        throw new ForbiddenException('Car with this VIN code already exists');
+        throw new ConflictException('Car with this VIN code already exists');
       }
       throw new InternalServerErrorException(
         `Failed to create car: ${error.message}`,
@@ -61,7 +73,7 @@ export class CarService {
     carId: number,
     updateCarDto: UpdateCarDto,
   ): Promise<Car> {
-    const car = await this.findOne(userId, carId);
+    const car = await this.validateCarOwnership(userId, carId);
 
     try {
       Object.assign(car, updateCarDto);
@@ -91,7 +103,7 @@ export class CarService {
     carId: number,
     additionalKm: number,
   ): Promise<Car> {
-    const car = await this.findOne(userId, carId);
+    const car = await this.validateCarOwnership(userId, carId);
     car.current_mileage += additionalKm;
     return await this.carRepository.save(car);
   }

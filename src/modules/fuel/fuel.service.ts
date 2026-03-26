@@ -1,27 +1,27 @@
 import {
-  ForbiddenException,
   Injectable,
   InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Fuel } from './entities/fuel.entity';
-import { Car } from '../car/entities/car.entity';
 import { Repository } from 'typeorm';
 import { CreateFuelDto } from './dto/create-fuel.dto';
 import { UpdateFuelDto } from './dto/update-fuel.dto';
+import { CarService } from '../car/car.service';
 
 @Injectable()
 export class FuelService {
   constructor(
     @InjectRepository(Fuel) private readonly fuelRepository: Repository<Fuel>,
-    @InjectRepository(Car) private readonly carRepository: Repository<Car>,
+    private readonly carService: CarService,
   ) {}
 
   async getAll(userId: number, carId?: number): Promise<Fuel[]> {
     const where: any = { user_id: userId };
 
     if (carId) {
+      await this.carService.validateCarOwnership(userId, carId);
       where.car_id = carId;
     }
 
@@ -55,13 +55,7 @@ export class FuelService {
   ): Promise<Fuel> {
     const { car_id, station, price, liters } = createFuelDto;
 
-    const car = await this.carRepository.findOne({
-      where: { car_id, user_id: userId },
-    });
-
-    if (!car) {
-      throw new ForbiddenException(`Access denied to car with ID ${car_id}`);
-    }
+    await this.carService.validateCarOwnership(userId, car_id);
 
     try {
       const newFuel = this.fuelRepository.create({
@@ -96,27 +90,10 @@ export class FuelService {
     fuelId: number,
     updateFuelDto: UpdateFuelDto,
   ): Promise<Fuel> {
-    const fuel = await this.fuelRepository.findOne({
-      where: {
-        gas_id: fuelId,
-        user_id: userId,
-      },
-    });
-
-    if (!fuel) {
-      throw new NotFoundException(`Fuel record with ID ${fuelId} not found`);
-    }
+    const fuel = await this.getOne(userId, fuelId);
 
     if (updateFuelDto.car_id) {
-      const car = await this.carRepository.findOne({
-        where: { car_id: updateFuelDto.car_id, user_id: userId },
-      });
-
-      if (!car) {
-        throw new ForbiddenException(
-          `Access denied to car with ID ${updateFuelDto.car_id}`,
-        );
-      }
+      await this.carService.validateCarOwnership(userId, updateFuelDto.car_id);
     }
 
     try {

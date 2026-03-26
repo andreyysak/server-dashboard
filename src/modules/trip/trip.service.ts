@@ -1,5 +1,4 @@
 import {
-  ForbiddenException,
   Injectable,
   InternalServerErrorException,
   NotFoundException,
@@ -9,6 +8,7 @@ import { Trip } from './entities/trip.entity';
 import { Repository } from 'typeorm';
 import { CreateTripDto } from './dto/create-trip.dto';
 import { UpdateTripDto } from './dto/update-trip.dto';
+import { CarService } from '../car/car.service';
 import { Car } from '../car/entities/car.entity';
 
 @Injectable()
@@ -16,12 +16,14 @@ export class TripService {
   constructor(
     @InjectRepository(Trip) private readonly tripRepository: Repository<Trip>,
     @InjectRepository(Car) private readonly carRepository: Repository<Car>,
+    private readonly carService: CarService,
   ) {}
 
   async getAllTrips(userId: number, carId?: number): Promise<Trip[]> {
     const where: any = { user_id: userId };
 
     if (carId) {
+      await this.carService.validateCarOwnership(userId, carId);
       where.car_id = carId;
     }
 
@@ -56,13 +58,7 @@ export class TripService {
   ): Promise<Trip> {
     const { kilometres, direction, car_id } = createTripDto;
 
-    const car = await this.carRepository.findOne({
-      where: { car_id, user_id: userId },
-    });
-
-    if (!car) {
-      throw new ForbiddenException(`Access denied to car with ID ${car_id}`);
-    }
+    await this.carService.validateCarOwnership(userId, car_id);
 
     try {
       const newTrip = this.tripRepository.create({
@@ -109,14 +105,7 @@ export class TripService {
     const originalCarId = trip.car_id;
 
     if (updateTripDto.car_id && updateTripDto.car_id !== trip.car_id) {
-      const car = await this.carRepository.findOne({
-        where: { car_id: updateTripDto.car_id, user_id: userId },
-      });
-      if (!car) {
-        throw new ForbiddenException(
-          `Access denied to car with ID ${updateTripDto.car_id}`,
-        );
-      }
+      await this.carService.validateCarOwnership(userId, updateTripDto.car_id);
     }
 
     try {
@@ -138,6 +127,10 @@ export class TripService {
   }
 
   async getTripDirections(userId: number, carId?: number): Promise<string[]> {
+    if (carId) {
+      await this.carService.validateCarOwnership(userId, carId);
+    }
+
     const query = this.tripRepository
       .createQueryBuilder('trip')
       .select('DISTINCT trip.direction', 'direction')
