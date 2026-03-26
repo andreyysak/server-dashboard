@@ -35,7 +35,7 @@ export class AuthController {
     const user = await this.authService.validate(req.user);
     const jwt = this.authService.generateJwt(user);
 
-    let redirectUrl: string;
+    let redirectUrl: string | undefined = undefined;
 
     // 1. Check if redirect_uri was passed in state (from frontend)
     if (state) {
