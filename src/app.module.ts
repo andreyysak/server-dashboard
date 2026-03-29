@@ -19,6 +19,9 @@ import { MoviesModule } from './modules/movies/movies.module';
 import { SeriesModule } from './modules/series/series.module';
 import { WorkoutsModule } from './modules/workout/workout.module';
 import { CurrencyModule } from './modules/currency/currency.module';
+import { HabitModule } from './modules/habit/habit.module';
+import { TodoModule } from './modules/todo/todo.module';
+import { NoteModule } from './modules/note/note.module';
 import { ExportModule } from './shared/export/export.module';
 import { ScheduleModule } from '@nestjs/schedule';
 
@@ -58,6 +61,9 @@ import { ScheduleModule } from '@nestjs/schedule';
     SeriesModule,
     WorkoutsModule,
     CurrencyModule,
+    HabitModule,
+    TodoModule,
+    NoteModule,
     ExportModule,
     ScheduleModule.forRoot(),
   ],
